@@ -1,99 +1,160 @@
 module cola_recepcion
     implicit none
+    private
 
-    type :: cliente
-        integer :: id, img_g, img_p
-        character(len=:), allocatable :: nombre
-        type(cliente), pointer :: sig
-        type(cliente), pointer :: prev
-    end type cliente
+    ! NODO
+    type, public :: node
+        private
+        integer :: id, img_p, img_g
+        character(:), allocatable :: value
+        type(node), pointer :: next
+        type(node), pointer :: prev
+    end type node
 
-    type :: cola_doble
-        type(cliente), pointer :: head => null()
-        type(cliente), pointer :: tail => null()
+    ! LISTA
+    type, public :: linked_list
+        private
+        type(node), pointer :: head => null()
+        type(node), pointer :: tail => null() 
     contains
-        procedure :: add_cliente
-        procedure :: show_clientes
-        procedure :: clear
-        procedure :: is_empty
-        procedure :: remove_cliente
-    end type cola_doble
+        procedure :: enqueue    
+        procedure :: dequeue    
+        procedure :: print
+        procedure :: delete
+        procedure :: get_top_info 
+    end type linked_list
 
 contains
 
-    subroutine add_cliente(this, id, img_g, img_p, nombre)
-        class(cola_doble), intent(inout) :: this
+    subroutine enqueue(self, id, img_g, img_p, value)
+        class(linked_list), intent(inout) :: self
         integer, intent(in) :: id, img_g, img_p
-        character(len=:), allocatable, intent(in) :: nombre
-        type(cliente), pointer :: actual
-        allocate(actual)
-        actual%id = id
-        actual%img_g = img_g
-        actual%img_p = img_p
-        allocate(actual%nombre, source=nombre)
-        actual%sig => null()
-        actual%prev => this%tail
+        character(len=*), intent(in) :: value
+        type(node), pointer :: temp
 
-        if (.not. associated(this%head)) then
-            this%head => actual
+        allocate(temp)
+        temp%id = id
+        temp%img_g = img_g
+        temp%img_p = img_p
+        temp%value = value
+        temp%next => null()
+        temp%prev => self%tail ! New element points to current tail
+
+        if (.not. associated(self%head)) then
+            self%head => temp
+        else
+            self%tail%next => temp ! Previous tail points to new tail
         end if
 
-        if (associated(this%tail)) then
-            this%tail%sig => actual
+        self%tail => temp ! Update tail to point to the new tail node
+
+        print *, "Se ha insertado correctamente el valor: ", value
+    end subroutine enqueue
+
+    subroutine dequeue(self)
+        class(linked_list), intent(inout) :: self
+        type(node), pointer :: removed_node
+
+        if (.not. associated(self%head)) then
+            print *, "La cola está vacía."
+            return
         end if
 
-        this%tail => actual
-    end subroutine add_cliente
+        removed_node => self%head
 
-    subroutine show_clientes(this)
-        class(cola_doble), intent(inout) :: this
-        type(cliente), pointer :: actual
-        actual => this%head
-        do
-            if (.not. associated(actual)) then
-                exit
-            end if
-            print *, 'ID:', actual%id, ', img_g:', actual%img_g, ', img_p:', actual%img_p, ', nombre:', trim(actual%nombre)
-            actual => actual%sig
+        if (associated(removed_node%next)) then
+            self%head => removed_node%next
+            removed_node%next%prev => null()
+        else
+            self%head => null()
+            self%tail => null() ! Update tail since the queue becomes empty
+        end if
+
+        deallocate(removed_node)
+        print *, "Se ha eliminado correctamente el primer valor de la cola."
+    end subroutine dequeue
+
+    subroutine print(self)
+        class(linked_list), intent(inout) :: self
+        type(node), pointer :: current
+
+        if (.not. associated(self%head)) then
+            print *, "La cola está vacía."
+            return
+        end if
+
+        current => self%head
+
+        print *, "Elementos de la cola:"
+        do while (associated(current))
+            print *, 'ID:', current%id, ', img_g:', current%img_g, ', img_p:', current%img_p, ', value:', current%value
+            current => current%next
         end do
-    end subroutine show_clientes
+    end subroutine print
 
-    subroutine clear(this)
-        class(cola_doble), intent(inout) :: this
-        type(cliente), pointer :: current_node, next_node
-        current_node => this%head
-        do
-            if (.not. associated(current_node)) then
-                exit
-            end if
-            next_node => current_node%sig
-            deallocate(current_node%nombre)
-            deallocate(current_node)
-            current_node => next_node
+    subroutine delete(self, value)
+        class(linked_list), intent(inout) :: self
+        character(len=*), intent(in) :: value
+        type(node), pointer :: current
+
+        if (.not. associated(self%head)) then
+            print *, "La cola está vacía."
+            return
+        end if
+
+        current => self%head
+
+        do while (associated(current) .and. current%value /= value)
+            current => current%next
         end do
-        this%head => null()
-        this%tail => null()
-    end subroutine clear
 
-    logical function is_empty(this)
-        class(cola_doble), intent(in) :: this
-        is_empty = .not. associated(this%head)
-    end function is_empty
-
-    subroutine remove_cliente(this)
-        class(cola_doble), intent(inout) :: this
-        type(cliente), pointer :: removed_node
-        if (associated(this%head)) then
-            removed_node => this%head
-            this%head => removed_node%sig
-            if (associated(this%head)) then
-                this%head%prev => null()
+        if (associated(current) .and. current%value == value) then
+            if (associated(current%prev)) then
+                ! El nodo a eliminar no es el primero
+                current%prev%next => current%next
             else
-                this%tail => null()
+                ! El nodo a eliminar es el primero
+                self%head => current%next
             end if
-            deallocate(removed_node%nombre)
-            deallocate(removed_node)
-        endif
-    end subroutine remove_cliente
+            
+            ! Si el nodo a eliminar no es el último
+            if (associated(current%next)) then
+                current%next%prev => current%prev
+            end if
+
+            deallocate(current)
+            print *, "Se ha eliminado correctamente el valor: ", value
+        else
+            print *, "El valor no se encuentra en la cola."
+        end if
+
+    end subroutine delete
+
+    subroutine get_top_info(self, info, info_value)
+        class(linked_list), intent(in) :: self
+        character(len=*), intent(in) :: info
+        integer, intent(out) :: info_value
+        
+        type(node), pointer :: top_node
+    
+        if (.not. associated(self%head)) then
+            print *, "La cola está vacía."
+            return
+        end if
+    
+        top_node => self%head
+    
+        select case (trim(adjustl(info)))
+        case ("id")
+            info_value = top_node%id
+        case ("img_g")
+            info_value = top_node%img_g
+        case ("img_p")
+            info_value = top_node%img_p
+        case default
+            print *, "La información solicitada no es válida."
+        end select
+    end subroutine get_top_info
+    
 
 end module cola_recepcion

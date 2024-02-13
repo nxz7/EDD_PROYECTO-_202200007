@@ -3,17 +3,16 @@ program Menu
     use ventanillas
     implicit none
 !-----------LISTAS-------------------------
-    type(cola_doble) :: cola_inicio
-    type(ventanillas_node), pointer :: ventanillas_list
-        !--VARIABLES QUE SE USAN-
-    character(len=:), allocatable :: client_name
-    character(len=:), allocatable :: pila
+    type(simple_linked_list) :: lista_v
+    type(linked_list) :: list
+    integer :: id_value
+    integer :: img_pf
+    integer :: img_pg
+    integer :: numItems
+    integer :: ventanillas  
     character(len=1) :: opcion
-    character(len=:), allocatable :: nombre
+    !character(:), allocatable :: nombre_p
 
-    allocate(ventanillas_list)
-
-    ! Display the initial menu
     print *, "-----------------------------------"
     print *, "FASE 1 EDD - 202200007"
     print *, "-----------------------------------"
@@ -35,43 +34,54 @@ program Menu
         select case(opcion)
             case('1')
                 print *, "ESCRIBA LA RUTA DEL ARCHIVO DE CLIENTES:"
-                ! Add items to the queue
-                nombre = 'primero'
-                call cola_inicio%add_cliente(1, 3, 2, nombre)
-                call add_cliente_to_ventanillas(ventanillas_list, 1, 3, 2, nombre)
-                pila = 'pila 1 -1'
-                call add_element_to_stack(ventanillas_list, nombre, pila)
-                pila = 'pila 1 -2'
-                call add_element_to_stack(ventanillas_list, nombre, pila)
-                
-
-                nombre = 'segundo'
-                call cola_inicio%add_cliente(2, 1, 0, nombre)
-                call add_cliente_to_ventanillas(ventanillas_list, 2, 1, 0, nombre)
-                pila = 'pila 2 -1'
-                call add_element_to_stack(ventanillas_list, nombre, pila)
-                
-
-                nombre = 'tercero'
-                call cola_inicio%add_cliente(3, 2, 1, nombre)
-                call add_cliente_to_ventanillas(ventanillas_list, 3, 2, 1, nombre)
-                
-                ! Show the contents of the queue
-                print *, "Queue contents after adding items:"
-                call cola_inicio%show_clientes()
-                
-                ! Remove an item from the queue
-                call cola_inicio%remove_cliente()
-                
-                ! Show the contents of the queue after removal
-                print *, "Queue contents after removing an item:"
-                call cola_inicio%show_clientes()
+                call list%enqueue(1,0,3,"Hola")
+                call list%enqueue(2,2,2,"Mundo")
+                call list%enqueue(3,3,3,"1")
+                call list%enqueue(4,4,4,"FIN")
+                call list%enqueue(5,5,5,"5")
+                call list%enqueue(6,6,6,"6")
+                call list%print()
+            
+                call list%dequeue()
+                call list%print()
 
             case('2')
-                print *, "ESCRIBA LA CANTIDAD DE VENTANILLAS A CREAR"
+                print *, "¿Cuantas ventanillas quiere crear?"
+                read(*, *) ventanillas
             case('3')
                 print *, "EJECUTANDO PASO..."
-                call display_clients(ventanillas_list)
+                call list%get_top_info("id",id_value)
+                call list%get_top_info("img_p",img_pf)
+                call list%get_top_info("img_g",img_pg)
+                ! VERIFICACION
+                print *, "ID of the top node in the queue:", id_value
+            
+            
+                ! ENTRA EN EL LOOP DE AGREGAR VENTANAS ---  EL LOOP LE FALTA LA PILA, IMAGNES Y MOVER
+                call lista_v%get_count(numItems)
+                do while (numItems < ventanillas)
+                    call lista_v%append("ventana", id_value, img_pf, img_pg)
+                    call list%dequeue()
+                    call list%get_top_info("id",id_value)
+                    call list%get_top_info("img_p",img_pf)
+                    call list%get_top_info("img_g",img_pg)
+                    !call lista_v%append("prueba2",id_value,img_pf,img_pg)
+            
+                
+                    call lista_v%get_count(numItems)
+            
+                    ! MIRAR EL NUMERO, SI LA CANTIDAD DE VENTANILLAS ES IGUAL A LA CANTIDAD QUE SE HA CREADO
+                    if (numItems >= ventanillas) then
+                        print *, "No mas ventanas"
+                        exit ! Exit the loop
+                    end if
+                end do
+            
+                print *, "VENTANAS"
+                call lista_v%print()
+                call lista_v%get_count(numItems)
+                print *, "COLA:"
+                call list%print()
             case('4')
                 print *, "ESTADO DE LAS ESTRUCTURAS DE DATOS:"
             case('5')
@@ -90,4 +100,3 @@ program Menu
     end do
 
 end program Menu
-

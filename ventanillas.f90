@@ -1,139 +1,145 @@
 module ventanillas
     implicit none
-    
-    type :: cliente
-        integer :: numero, id, img_g, img_p
-        character(len=:), allocatable :: nombre
-        type(stack), pointer :: client_stack_ptr => null() ! apunta a la pila de elementos asociada con el cliente
-        type(cliente), pointer :: next
-    end type cliente
-    !LISTA SIMPLE DE VENTANILLAS
-    type :: ventanillas_node
-        integer :: numero
-        type(cliente), pointer :: head => null()
-    end type ventanillas_node
-!PILA DENTRO DE CADA NODO DE LOS CLIENTES
-    type :: stack_node
-        character(len=:), allocatable :: nombre_p
-        type(stack_node), pointer :: next
-    end type stack_node
-    
-    type :: stack
-        type(stack_node), pointer :: top => null()
-    end type stack
+    private
+
+    !NODO
+    type, public :: node
+        private
+        character(:), allocatable :: value
+        integer :: id
+        integer :: img_p
+        integer :: img_g
+        type(node), pointer :: next
+        type(node), pointer :: prev
+    end type node
+
+    !LISTA
+    type, public :: simple_linked_list
+    private
+    type(node), pointer :: head => null()
+    integer :: count = 0  ! Counter for the number of nodes
+contains
+    procedure :: append
+    procedure :: print
+    procedure :: delete
+    procedure :: update_count_and_print
+    procedure :: get_count
+end type simple_linked_list
 
 contains
 
-    subroutine push(stack_ptr, nombre_p)
-        type(stack), pointer :: stack_ptr
-        character(len=:), allocatable, intent(in) :: nombre_p
-        type(stack_node), pointer :: new_node
-        
-        allocate(new_node)
-        new_node%nombre_p = nombre_p
-        new_node%next => stack_ptr%top
-        stack_ptr%top => new_node
-    end subroutine push
+subroutine append(self, value, id, img_p, img_g)
+    class(simple_linked_list), intent(inout) :: self
+    character(len=*), intent(in) :: value
+    integer, intent(in) :: id, img_p, img_g
+    type(node), pointer :: current       
+    type(node), pointer :: temp
 
-    subroutine pop(stack_ptr, nombre_p)
-        type(stack), pointer :: stack_ptr
-        character(len=:), allocatable, intent(out) :: nombre_p
-        type(stack_node), pointer :: temp
-        
-        if (associated(stack_ptr%top)) then
-            nombre_p = stack_ptr%top%nombre_p
-            temp => stack_ptr%top
-            stack_ptr%top => stack_ptr%top%next
-            deallocate(temp)
-        else
-            nombre_p = ''
-        end if
-    end subroutine pop
+    allocate(temp)
+    temp%value = value
+    temp%id = id
+    temp%img_p = img_p
+    temp%img_g = img_g
+    temp%next => null()
+    temp%prev => self%head
 
-    subroutine add_cliente_to_ventanillas(ventanillas_ptr, id, img_g, img_p, nombre)
-        type(ventanillas_node), pointer :: ventanillas_ptr
-        integer, intent(in) :: id, img_g, img_p
-        character(len=:), allocatable, intent(in) :: nombre
-        type(cliente), pointer :: new_client, current_client
-        
-        allocate(new_client)
-        new_client%numero = 0
-        new_client%id = id
-        new_client%img_g = img_g
-        new_client%img_p = img_p
-        allocate(new_client%nombre, source=nombre)
-        
-        new_client%next => null() ! inicializar el puntero next del nuevo cliente
-        
-        ! memoria para la pila de elementos asociada con el cliente
-        allocate(new_client%client_stack_ptr)
-        
-        if (.not. associated(ventanillas_ptr%head)) then
-            ventanillas_ptr%head => new_client
-        else
-            current_client => ventanillas_ptr%head
-            do while (associated(current_client%next))
-                current_client => current_client%next
-            end do
-            current_client%next => new_client
-        end if
-        
-        ventanillas_ptr%numero = ventanillas_ptr%numero + 1
-    end subroutine add_cliente_to_ventanillas
-
-    subroutine add_element_to_stack(ventanillas_ptr, nombre, element)
-        type(ventanillas_node), pointer :: ventanillas_ptr
-        character(len=:), allocatable, intent(in) :: nombre, element
-        type(cliente), pointer :: current_client
-        logical :: found
-        
-        found = .false.
-        
-        current_client => ventanillas_ptr%head
-        do while (associated(current_client))
-            if (trim(current_client%nombre) == trim(nombre)) then
-                call push(current_client%client_stack_ptr, element) ! anadir elementos a la pila del cliente
-                found = .true.
-                exit
-            end if
-            current_client => current_client%next
+    if (.not. associated(self%head)) then
+        self%head => temp
+    else         
+        current => self%head
+        do while (associated(current%next))
+            current => current%next
         end do
-        
-        if (.not. found) then
-            print *, "Node with specified 'nombre' not found."
-        end if
-    end subroutine add_element_to_stack
+        current%next => temp
+        temp%prev => current
+    end if
 
-    subroutine display_clients(ventanillas_ptr)
-        type(ventanillas_node), intent(in) :: ventanillas_ptr
-        type(cliente), pointer :: current_client
-        type(stack_node), pointer :: current_element
-        integer :: counter
+    self%count = self%count + 1  ! Increment the node count
+    call self%update_count_and_print()  ! Update and print the count
+    print *, "Se ha insertado correctamente el valor: ", value
+end subroutine append
+
+subroutine print(self)
+    class(simple_linked_list), intent(inout) :: self
+    type(node), pointer :: current
+
+    if (.not. associated(self%head)) then
+        print *, "La lista está vacía."
+        return
+    end if
+
+    current => self%head
+
+    do while (associated(current))
+        print *, "Value: ", current%value, " ID: ", current%id, &
+        " Img_p: ", current%img_p, " Img_g: ", current%img_g
+
+        current => current%next
+    end do
+end subroutine
+
+subroutine delete(self, value)
+    class(simple_linked_list), intent(inout) :: self
+    character(len=*), intent(in) :: value
+    type(node), pointer :: current
+
+    if(.not. associated(self%head)) then
+        print *, "La lista está vacía."
+        return
+    end if
+
+    current => self%head
+
+    do while (associated(current) .and. current%value /= value)
+        current => current%next
+    end do
+
+    if (associated(current) .and. current%value == value) then
+        if (associated(current%prev)) then
+            ! El nodo a eliminar no es el primero
+            current%prev%next => current%next
+        else
+            ! El nodo a eliminar es el primero
+            self%head => current%next
+        end if
         
-        current_client => ventanillas_ptr%head
-        counter = 1
-        print *, 'Ventanillas List:'
-        do while (associated(current_client))
-            print *, 'Client ', counter, ':'
-            print *, '  ID:', current_client%id
-            print *, '  Img_g:', current_client%img_g
-            print *, '  Img_p:', current_client%img_p
-            print *, '  Nombre:', trim(current_client%nombre)
-            
-            ! MOSTRAR LOS ELEMENTOS DE LA PILA ASOCIADA CON EL CLIENTE
-            print *, '  Stack Contents:'
-            if (associated(current_client%client_stack_ptr)) then
-                current_element => current_client%client_stack_ptr%top
-                do while (associated(current_element))
-                    print *, '    ', trim(current_element%nombre_p)
-                    current_element => current_element%next
-                end do
-            else
-                print *, '    Pila vacia'
-            end if
-            
-            current_client => current_client%next
-            counter = counter + 1
-        end do
-    end subroutine display_clients
+        ! Si el nodo a eliminar no es el último
+        if (associated(current%next)) then
+            current%next%prev => current%prev
+        end if
+
+        deallocate(current)
+        self%count = self%count - 1  ! Decrement the node count
+        call self%update_count_and_print()  ! Update and print the count
+        print *, "Se ha eliminado correctamente el valor: ", value
+    else
+        print *, "El valor no se encuentra en la lista."
+    end if
+end subroutine
+
+subroutine update_count_and_print(self)
+    class(simple_linked_list), intent(inout) :: self
+    print *, "Número de nodos en la lista:", self%count
+end subroutine
+
+subroutine get_count(self, list_count)
+    class(simple_linked_list), intent(in) :: self
+    integer, intent(out) :: list_count
+    type(node), pointer :: current
+
+    list_count = 0  ! Initialize count
+
+    if (.not. associated(self%head)) return  ! If the list is empty, return 0
+
+    current => self%head
+    list_count = 1  ! Start counting from 1 as the head node exists
+
+    ! Traverse the list to count nodes
+    do while (associated(current%next))
+        list_count = list_count + 1
+        current => current%next
+    end do
+end subroutine get_count
+
+
 end module ventanillas
