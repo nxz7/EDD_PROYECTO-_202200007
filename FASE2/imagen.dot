@@ -1,0 +1,43 @@
+ digraph G {
+  node [shape=plaintext];
+  label="IMAGEN";
+  some_node [
+  label=<<table border="0" cellborder="0" cellspacing="0" width="100%" height="100%">
+ <tr>
+ <td bgcolor="White" width="4" height="4">     </td>                                                 
+ <td bgcolor="White" width="4" height="4">     </td>                                                 
+ <td bgcolor="White" width="4" height="4">     </td>                                                 
+ <td bgcolor="White" width="4" height="4">     </td>                                                 
+ <td bgcolor="White" width="4" height="4">     </td>                                                 
+ <td bgcolor="White" width="4" height="4">     </td>                                                 
+ <td bgcolor="White" width="4" height="4">     </td>                                                 
+ </tr>
+ <tr>
+ <td bgcolor="White" width="4" height="4">     </td>                                                 
+ <td bgcolor="White" width="4" height="4">     </td>                                                 
+ <td bgcolor="White" width="4" height="4">     </td>                                                 
+ <td bgcolor="White" width="4" height="4">     </td>                                                 
+ <td bgcolor="White" width="4" height="4">     </td>                                                 
+ <td bgcolor="White" width="4" height="4">     </td>                                                 
+ <td bgcolor="White" width="4" height="4">     </td>                                                 
+ </tr>
+ <tr>
+ <td bgcolor="White" width="4" height="4">     </td>                                                 
+ <td bgcolor="White" width="4" height="4">     </td>                                                 
+ <td bgcolor="White" width="4" height="4">     </td>                                                 
+ <td bgcolor="White" width="4" height="4">     </td>                                                 
+ <td bgcolor="White" width="4" height="4">     </td>                                                 
+ <td bgcolor="White" width="4" height="4">     </td>                                                 
+ <td bgcolor="White" width="4" height="4">     </td>                                                 
+ </tr>
+ <tr>
+ <td bgcolor="BLUE" width="4" height="4">     </td>                                                  
+ <td bgcolor="BLUE" width="4" height="4">     </td>                                                  
+ <td bgcolor="RED" width="4" height="4">     </td>                                                   
+ <td bgcolor="BLUE" width="4" height="4">     </td>                                                  
+ <td bgcolor="GREEN" width="4" height="4">     </td>                                                 
+ <td bgcolor="RED" width="4" height="4">     </td>                                                   
+ <td bgcolor="BLUE" width="4" height="4">     </td>                                                  
+ </tr>
+ </table>>];
+ }

@@ -1,0 +1,17 @@
+[
+    {
+        "dpi":"075551011",
+        "nombre_cliente":"natalia",
+        "password":"1234"
+    },
+    {
+        "dpi":"075545765",
+        "nombre_cliente":"maria",
+        "password":"4545"
+    },
+    {
+        "dpi":"08005964",
+        "nombre_cliente":"pepe",
+        "password":"04155"
+    }
+]

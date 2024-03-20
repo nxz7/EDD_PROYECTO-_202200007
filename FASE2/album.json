@@ -1,0 +1,14 @@
+[
+    {
+        "nombre_album":"album1",
+        "imgs":[0,2,4,8]
+    },
+    {
+        "nombre_album":"album4",
+        "imgs":[1,3,11,8]
+    },
+    {
+        "nombre_album":"album5",
+        "imgs":[7,2,9,10,13,5]
+    }
+]
