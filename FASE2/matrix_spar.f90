@@ -38,6 +38,7 @@ module matrix_spar
         procedure :: graficar
         procedure :: unir_matrix
         procedure :: clear_matrix
+        procedure :: print_sparse
     end type
 
 contains
@@ -278,14 +279,14 @@ contains
         ! Abrir el archivo DOT
         open(unit, file=filename, status='replace')
         aux => self%root%down
-        ! Write table headers
+        ! table headers
         write(unit, *) "digraph G {"
         write(unit, * ) " node [shape=plaintext];"
         write(unit, *) " label=""IMAGEN"";"
         write(unit, *) " some_node ["
         write(unit, *) " label=<<table border=""0"" cellborder=""0"" cellspacing=""0"" width=""100%"" height=""100%"">"
         
-        ! Write table rows
+        ! f
         do i = 0, self%height
             write(unit, *) "<tr>"
             do j = 0, self%width
@@ -300,7 +301,7 @@ contains
             write(unit, *) "</tr>"
         end do
         
-        ! Write end of table and end of digraph
+        ! fin
         write(unit, *) "</table>>];"
         write(unit, *) "}"
         close(unit)
@@ -311,7 +312,70 @@ contains
         print *, 'Graphviz file generated: ', trim(adjustl(filename)) // '.png'
     end subroutine graficar
     
-!-----------------------------------------
+!------------------graficar esparcida----------------
+    subroutine print_sparse(self,filename)
+        class(matrix), intent(inout) :: self  
+        integer :: i
+        integer :: unit
+        integer :: j,k,l
+        character(len=*), intent(in) :: filename
+        type(node), pointer :: aux
+        type(node_val) :: val
+        aux => self%root%down
+    ! Print the header
+        open(unit, file=filename, status='replace')
+        write(unit, *) "graph grid{"
+        write(unit, *) "fontname=""Helvetica,Arial,sans-serif"""
+        write(unit, *) "node [fontname=""Helvetica,Arial,sans-serif""]"
+        write(unit, *) "edge [fontname=""Helvetica,Arial,sans-serif""]"
+        write(unit, *) "layout=dot"
+        write(unit, *) "label=""matriz"""
+        write(unit, *) "node [shape=plaintext]"
+        write(unit, *) "edge [weight=2000 style=dashed color=purple]"
+        k=0
+        do j = 0, self%width
+            write(unit, fmt='(A,I0)') "c",k
+            do i = 0, self%height
+                val = self%getValue(i,j)
+                if(.not. val%exists) then
+                    write(unit, "(A,I0,A,I0,A)") "-- "" ", i, "N",j,""""
+
+                else
+                    write(unit, "(A,A,I0,I0,A)") "-- "" ", trim(adjustl(val%value)),i,j,""""
+                end if
+                
+            end do
+            k=k+1
+        end do
+
+        l=0
+        do i = 0, self%height
+        write(unit, "(A)") "rank=same {"
+        write(unit, '(I0)') l
+            do j = 0, self%width
+                val = self%getValue(i,j)
+                if(.not. val%exists) then
+                    write(unit, "(A,I0,A,I0,A)") "-- "" ", i, "N",j,""""
+
+                else
+                    write(unit, "(A,A,I0,I0,A)") "-- "" ", trim(adjustl(val%value)),i,j,""""
+                end if
+            end do
+            l=l+1
+            write(unit, "(A)") "}"
+        end do
+        
+    ! Print the closing braces
+    write(unit, *) "}"
+    close(unit)
+        
+    ! Generar el archivo PNG utilizando Graphviz
+    !call system('dot -Tpng ' // trim(filename) // ' -o ' // trim(adjustl(filename)) // '.png')
+    
+    print *, 'Graphviz file generated: ', trim(adjustl(filename)) // '.png'
+end subroutine print_sparse
+
+!...........................    
     subroutine unir_matrix(self, other)
         class(matrix), intent(inout) :: self
         class(matrix), intent(in) :: other

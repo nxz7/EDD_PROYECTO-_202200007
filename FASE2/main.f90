@@ -1,87 +1,116 @@
-subroutine json_capas(filename)
+subroutine json_capas(filename, bst_arbol, bst_matrix, username)
     use json_module
+    use bstdef
+    use matrix_spar
+
     implicit none
 
     character(len=*), intent(in) :: filename
 
-    type(json_file) :: json   ! Declare a variable of type json_file
-    type(json_value), pointer :: listPointer, layerPointer, pixelsPointer, pixelPointer, attributePointer  ! Declare pointers to json_value variables
-    type(json_core) :: jsonc  ! Declare a variable of type json_core to access basic JSON functions
-    character(:), allocatable :: color, fila, columna  ! Declare character strings to be allocated dynamically
+    type(json_file) :: json   
+    type(json_value), pointer :: listPointer, layerPointer, pixelsPointer, pixelPointer, attributePointer  
+    type(json_core) :: jsonc
+    
+    type(bst), intent(inout) ::  bst_arbol
+    type(matrix), intent(inout) :: bst_matrix
+    character(len=*), intent(inout) ::username
+    character(:), allocatable :: color, color_bst
 
-    integer :: i, j, size, id_capa        ! Declare integer variables
+    integer :: i, j, size, id_capa, fila, columna, fila_bst, columna_bst,id_bst         
     logical :: found
     logical :: id_found
 
-    call json%initialize()    ! Initialize the JSON module
-    call json%load(filename=filename)  ! Load the JSON file
-    !call json%print()         ! Print the content of the JSON file (optional)
+    call json%initialize()    
+    call json%load(filename=filename)  
+    !call json%print()         
     
     call json%info('',n_children=size)
 
-    call json%get_core(jsonc)               ! Get the JSON core to access its basic functions
+    call json%get_core(jsonc)              
     call json%get('', listPointer, found)
 
-    do i = 1, size                          ! Loop over the number of elements in the JSON
-        id_found = .false.                  ! Reset id_found flag for each layer
-        call jsonc%get_child(listPointer, i, layerPointer, found = found)  ! Get the i-th child of listPointer
-        call jsonc%get_child(layerPointer, 'id_capa', attributePointer, found = found)  ! Get the value associated with the key 'id_capa'
+    do i = 1, size                          
+        id_found = .false.                 
+        call jsonc%get_child(listPointer, i, layerPointer, found = found)  
+        call jsonc%get_child(layerPointer, 'id_capa', attributePointer, found = found)  
 
-        if (found) then                      ! If the value associated with the key 'id_capa' is found
-            call jsonc%get(attributePointer, id_capa)  ! Get the value and assign it to the variable 'id_capa'
-            id_found = .true.                ! Set id_found to true
-            print *, 'id_capa:', id_capa     ! Print the id_capa
+        if (found) then                      
+            call jsonc%get(attributePointer, id_capa)  
+            id_found = .true.                
+            print *, 'id_capa:', id_capa     
         end if
         
-        call jsonc%get_child(layerPointer, 'pixeles', pixelsPointer, found = found) ! Get the value associated with the key 'pixeles'
+        call jsonc%get_child(layerPointer, 'pixeles', pixelsPointer, found = found) 
         
-        if (found) then                      ! If the value associated with the key 'pixeles' is found
-            j = 0 ! Initialize pixel index
+        if (found) then                      
+            j = 0 
             
-            do while (.true.) ! Loop until all pixels are processed
+            do while (.true.) 
                 j = j + 1
                 
-                call jsonc%get_child(pixelsPointer, j, pixelPointer, found = found) ! Get the j-th pixel element
+                call jsonc%get_child(pixelsPointer, j, pixelPointer, found = found) 
                 
-                if (.not. found) exit ! If pixel not found, exit loop
+                if (.not. found) exit 
                 
                 call jsonc%get_child(pixelPointer, 'color', attributePointer, found = found) 
                 if (found) then
                     call jsonc%get(attributePointer, color) 
-                    print *, 'color:', trim(color)        
+                    print *, 'color:', trim(color)
+                    color_bst = trim(color)        
                 end if
                 
                 call jsonc%get_child(pixelPointer, 'fila', attributePointer, found = found) 
                 if (found) then
                     call jsonc%get(attributePointer, fila)
-                    print *, 'fila:', trim(fila)          
+                    print *, 'fila:',fila
+                    fila_bst = fila          
                 end if
                 
                 call jsonc%get_child(pixelPointer, 'columna', attributePointer, found = found) 
                 if (found) then
                     call jsonc%get(attributePointer, columna) 
-                    print *, 'columna:', trim(columna)      
+                    print *, 'columna:', columna
+                    columna_bst = columna      
                 end if
+                !call matriz1%insert(3, 4, "GREEN")
+                call bst_matrix%insert(fila_bst, columna_bst, trim(color_bst))
+                
             end do
         end if
         
         if (id_found) then                    
-            print *, 'id_capa:', id_capa     
+            print *, 'id_capa:', id_capa
+            id_bst = id_capa
+            call bst_arbol%add(id_bst,username,bst_matrix)
+            call bst_matrix%print()
+            call bst_matrix%clear_matrix() 
         end if
     end do
 
     call json%destroy()                    
 end subroutine json_capas
 
-subroutine json_imagenes(filename)
+subroutine json_imagenes(filename, avl_arbol, lista_avl, username)
         use json_module
-        implicit none
+        use avldef
+        use lista_avl
+        !use lista_cliente_img
+
+        !implicit none
     
         character(len=*), intent(in) :: filename
+
         type(json_file) :: json
         type(json_value), pointer :: listPointer, itemPointer, idPointer, capasPointer, capaPointer
         type(json_core) :: jsonc
-        integer :: i, j, size, id, capa, capas_size
+
+        type(avl), intent(inout) ::  avl_arbol
+        type(linked_list), intent(inout) :: lista_avl
+        type(linked_list):: lista_avl_2
+        !type(lista_img), intent(inout) :: image_list
+        character(len=*), intent(inout) ::username
+
+        integer :: i, j, size, id_json, capa, capas_size, capa_avl, id_avl
         logical :: found
     
         call json%initialize()
@@ -100,8 +129,8 @@ subroutine json_imagenes(filename)
                     call jsonc%get_child(itemPointer, 'id', idPointer, found)
     
                     if (found) then
-                        call jsonc%get(idPointer, id)
-                        print *, 'id', id
+                        call jsonc%get(idPointer, id_json)
+                        print *, 'id', id_json
                     end if
     
                     call jsonc%get_child(itemPointer, 'capas', capasPointer, found)
@@ -115,15 +144,24 @@ subroutine json_imagenes(filename)
                             if (found) then
                                 call jsonc%get(capaPointer, capa)
                                 print *, capa
+                                capa_avl = capa
+                                call lista_avl%push(capa_avl)
                             end if
                         end do
-    
-                        print *, 'id', id
+                        id_avl=id_json
+                        print *, '------------'
+                        call lista_avl%print()
+                        lista_avl_2=lista_avl
+                        call avl_arbol%add(id_avl,username, lista_avl_2)
+                        print *, '----PRUEBA------'
+                        call lista_avl_2%print()
+                        call lista_avl%clear()
+                        print *, 'id', id_json
                     end if
                 end if
             end do
         end if
-    
+        !call image_list%push(username, avl_arbol)
         call json%destroy()
 end subroutine json_imagenes
 
@@ -235,18 +273,63 @@ end subroutine json_cliente
 
 
 program main
+    use avldef
+    use lista_avl
+    use lista_cliente_img
+    use bstdef
+    use matrix_spar
+    use lista_cliente_capas
+    
     implicit none
-    character(len=255) :: filename, file_imagenes, file_album, file_cliente
+    type(avl)::  avl_arbol_m, avl_tree2
+    type(linked_list):: lista_avl_m, res
+    type(lista_img) :: image_list_m
+    type(bst) ::  bst_arbol_m
+    type(matrix) :: bst_matrix_m
+    type(lista_capas):: lista_capas_m
+    character(len=255) ::username_m
+    integer :: unit
+
+    character(len=255) :: file_capas, file_imagenes, file_album, file_cliente
+    username_m = "user1"
+    unit=1
+
+    !us2 = "natalia"
+
+
     print *, "capas:"
     read(*,*) filename
-    call json_capas(trim(filename))
+    call json_capas(trim(filename),bst_arbol_m, bst_matrix_m, username_m)
+    call lista_capas_m%push(username_m,bst_arbol_m)
+	
+	!call bst_arbol_m%clear_binario()
+
     print *, "imagenes:"
     read(*,*) file_imagenes
-    call json_imagenes(trim(file_imagenes))
+    call json_imagenes(trim(file_imagenes), avl_arbol_m, lista_avl_m, username_m)
+    call image_list_m%push(username_m, avl_arbol_m)
+
+    call image_list_m%print()
+    !call avl_arbol_m%avl_clear()
+
     print *, "album:"
     read(*,*) file_album
     call json_album(trim(file_album))
     print *, "cliente:"
     read(*,*) file_cliente
     call json_cliente(trim(file_cliente))
+    
+
+    open(unit, file='prueba.dot', status='replace')
+    call image_list_m%search(username_m, avl_tree2)
+    call avl_tree2%preorder(avl_tree2%root)
+    !call avl_tree2%get_list_by_value(7,res)
+    !call res%print()
+    print *, 'generando representacion de avl...'
+    call avl_tree2%dotgen(avl_tree2%root, unit)
+    close(unit)
+    print *, 'generado'
+    call execute_command_line('dot -Tsvg prueba.dot > prueba.svg')
+    call execute_command_line('start prueba.svg')
+
 end program main
