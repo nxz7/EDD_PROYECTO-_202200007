@@ -72,7 +72,7 @@ contains
             tmp%height = 0
             id = id + 1
             tmp%cliente = cliente
-            tmp%linked_list_data = lista  ! Assign the provided linked list to the node
+            tmp%linked_list_data = lista  !  node
         else if (value < tmp%value) then
             call this%add_rec(value, tmp%left,cliente, lista)
             if ((this%getheight(tmp%left) - this%getheight(tmp%right))==2) then

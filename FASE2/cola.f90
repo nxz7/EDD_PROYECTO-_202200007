@@ -87,7 +87,7 @@ contains
         this%head => null()
         this%tail => null()
     
-        print *, 'Cola cleared'
+        print *, '******************'
     end subroutine cola_clear
     
 end module cola_module

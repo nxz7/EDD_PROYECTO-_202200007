@@ -1,0 +1,29 @@
+digraph G {
+  node [color=lightblue2, style=filled];
+    { rank=same; album
+album1;
+album4;
+album5;
+}
+album
+->album1
+->album4
+->album5
+album1
+->album10
+->album12
+->album14
+->album18
+album4
+->album41
+->album43
+->album411
+->album48
+album5
+->album57
+->album52
+->album59
+->album510
+->album513
+->album55
+}

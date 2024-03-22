@@ -82,7 +82,7 @@ subroutine json_capas(filename, bst_arbol, bst_matrix, username)
             print *, 'id_capa:', id_capa
             id_bst = id_capa
             call bst_arbol%add(id_bst,username,bst_matrix)
-            call bst_matrix%print()
+            !call bst_matrix%print()
             call bst_matrix%clear_matrix() 
         end if
     end do
@@ -150,11 +150,11 @@ subroutine json_imagenes(filename, avl_arbol, lista_avl, username)
                         end do
                         id_avl=id_json
                         print *, '------------'
-                        call lista_avl%print()
+                        !call lista_avl%print()
                         lista_avl_2=lista_avl
                         call avl_arbol%add(id_avl,username, lista_avl_2)
                         print *, '----PRUEBA------'
-                        call lista_avl_2%print()
+                        !call lista_avl_2%print()
                         call lista_avl%clear()
                         print *, 'id', id_json
                     end if
@@ -165,6 +165,65 @@ subroutine json_imagenes(filename, avl_arbol, lista_avl, username)
         call json%destroy()
 end subroutine json_imagenes
 
+subroutine json_album(filename,lista_album)
+    use json_module
+    use lista_album
+    implicit none
+
+    character(len=*), intent(in) :: filename
+    type(json_file) :: json
+    type(json_value), pointer :: listPointer, itemPointer, idPointer, capasPointer, capaPointer
+    type(json_core) :: jsonc
+    character(:), allocatable :: id, id_album
+    integer :: i, j, size, img, capas_size, img_album
+    type(List_of_list), intent(inout) :: lista_album
+    logical :: found
+
+    call json%initialize()
+    call json%load(filename=filename)
+
+    call json%get_core(jsonc)
+    call json%get('', listPointer, found)
+    print *, '--------------------'
+    if (found) then
+        call json%info('', n_children=size)
+
+        do i = 1, size
+            call jsonc%get_child(listPointer, i, itemPointer, found)
+
+            if (found) then
+                call jsonc%get_child(itemPointer, 'nombre_album', idPointer, found)
+
+                if (found) then
+                    call jsonc%get(idPointer, id)
+                    print *, 'nombre_album', id
+                end if
+
+                call jsonc%get_child(itemPointer, 'imgs', capasPointer, found)
+
+                if (found) then
+                    call jsonc%info(capasPointer, n_children=capas_size)
+
+                    do j = 1, capas_size
+                        call jsonc%get_child(capasPointer, j, capaPointer, found)
+
+                        if (found) then
+                            call jsonc%get(capaPointer, img)
+                            print *, img
+                            img_album=img
+                            call lista_album%insert( id, img_album)
+                        end if
+                    end do
+                    print *, 'nombre_album', id
+                end if
+            end if
+        !call lista_album%printList()
+        end do
+    end if
+
+    call json%destroy()
+end subroutine json_album
+
 program Menu
 	use avldef
 	use lista_avl
@@ -174,7 +233,8 @@ program Menu
     use lista_cliente_capas
     use matrix_spar
     use cola_module
-	!-------------
+	use lista_album
+    use lista_cliente_album
 
 	implicit none
 	!-------avl-imagenes----------------
@@ -190,13 +250,18 @@ program Menu
 	type(lista_capas):: lista_c
 	type(matrix) :: matrizfin,matriz_preorden,matriz_recorrido,matriz_postorden
 	type(matrix) :: matriz_inorden
-	type(cola) :: cola_prez, cola_posto, cola_inor
+	type(cola) :: cola_prez, cola_posto, cola_inor, reporte_pre, reporte_post, reporte_in
 	!-----------------
+	!------album-------
+	type(List_of_list) :: lista_albumd, segunda
+	type(lista_album_img) :: lista_album_imgd
+
+	!------------
     type(avl)::  avl_arbol_m
     type(linked_list):: lista_avl_m
     type(lista_img) :: image_list_m
-    type(bst) ::  bst_arbol_m,binario_esp
-    type(matrix) :: bst_matrix_m,matriz_esparcida
+    type(bst) ::  bst_arbol_m,binario_esp, binario_reporte
+    type(matrix) :: bst_matrix_m,matriz_esparcida, matriz_capa
     type(lista_capas):: lista_capas_m
 	!------------------
     character(len=255) :: file_capas, file_imagenes, file_album, file_cliente
@@ -208,10 +273,10 @@ program Menu
 	integer :: valor_rec
 
 	!----------------avl-imagenes------------------------
-	integer :: pr_id, recorrido
+	integer :: pr_id, recorrido, itera, numero_capa
 	!pruebasssssss	
 	pr_id=5
-	filename = 'output.dot'
+	filename = 'avl_arb.dot'
 	filebinario='arbol_binario.dot'
 	unit = 1
 
@@ -323,26 +388,37 @@ program Menu
 									call avl_arbol_m%inorder(avl_arbol_m%root)
 								case('3')
 									print *, "CARGA MASIVA DE ALBUMES"
+									print *, "album:"
+									read(*,*) file_album
+									call json_album(trim(file_album),lista_albumd)
+									call lista_album_imgd%push(username,lista_albumd)
+									print *, username
+
 								case('4')
 									print *, "VISUALIZAR ESTRUCTURAS"
 									!--------------avl-imagenes------------------------
 									print *, "avl----------------------------:"
 									open(unit, file=filename, status='replace')
 									call image_list_m%search(username, avl_tree2)
-									call avl_tree2%preorder(avl_tree2%root)
+									!call avl_tree2%preorder(avl_tree2%root)
 									!call avl_tree2%get_list_by_value(30,res)
 									!call res%print()
 									print *, 'generando representacion de avl...'
 									call avl_tree2%dotgen(avl_tree2%root, unit)
 									close(unit)
 									print *, 'dot file con nombre:', trim(filename)
-									call execute_command_line('dot -Tsvg output.dot > output.svg')
-									call execute_command_line('start output.svg')
+									call execute_command_line('dot -Tsvg avl_arb.dot > avl_arb.svg')
+									call execute_command_line('start avl_arb.svg')
 									print *, '...'
 									call avl_tree2%avl_clear()
 									print *, '...'
-									!----------------------------------------------------
+									!-------------------ALBUMES----------------------
+									call lista_album_imgd%search(username, segunda)
+									call segunda%printIndicesFirst("albumest.dot")
+									call execute_command_line('dot -Tsvg albumest.dot > albumest.svg')
+									call execute_command_line('start albumest.svg')
 
+									!-----------------------------------------
 									!---------- visualizar arbol b- capas--------------
 									print *, "arbol binario -----------------------------:"
 									open(unit, file=filebinario, status='replace')
@@ -558,21 +634,42 @@ program Menu
 												print *, "2. arbol de imagenes"
 											case ('3')
 												print *, "3. capas"
+												print *, "numero de capas que desea graficar"
+												read(*, *) recorrido
+												print *, recorrido
+												itera=recorrido
+																			!recorrido=recorrido+1
 												call lista_capas_m%search(username, binario_cap)
-												!busca el numero de capa y su matriz
-												
-												!call matriz3%print()
-												call binario_cap%search_by_value(5,matrizfin)
-												print *, "--------------"
-												call matrizfin%print()
-												!call matrizfin%unir_matrix(matriz3)
-												print *, "--------------"
-												call matrizfin%print()
-												call matrizfin%graficar('imagen.dot')
-												call execute_command_line('dot -Tsvg imagen.dot > imagen.svg')
-												call execute_command_line('start imagen.svg')
-												call matrizfin%clear_matrix()
-																							
+					
+												do while (recorrido > 0)
+													if (itera == recorrido) then
+														print *, "-> ingrese numero de vcapa"
+														read(*, *) numero_capa
+														call binario_cap%search_by_value(numero_capa,matrizfin)
+														print *, "-------generando imagen-------"
+														call matrizfin%graficar('imagen.dot')
+														call execute_command_line('dot -Tsvg imagen.dot > imagen.svg')
+														call execute_command_line('start imagen.svg')
+														recorrido=recorrido-1
+														print *, "<<<<<"
+														print *, recorrido
+													else
+														print *, "-> ingrese numero de vcapa"
+														read(*, *) numero_capa
+														call binario_cap%search_by_value(numero_capa,matriz_capa)
+														call matrizfin%unir_matrix(matriz_capa)
+															print *, "-----actualizando imagen----"
+															call matrizfin%graficar('imagen.dot')
+															call execute_command_line('dot -Tsvg imagen.dot > imagen.svg')
+															call execute_command_line('start imagen.svg')
+															call matriz_capa%clear_matrix()
+															print *, "capa agregada --> exitosamente"
+															recorrido= recorrido-1
+															print *, recorrido
+													endif
+												end do
+												print *, "******** IMAGEN GENERADA POR CAPAS *************"
+												call matrizfin%clear_matrix()									
 											case ('4')
 												print *, "-----------------------------------"
 												print *, "PROGRAM MENU - CLIENTE"
@@ -592,6 +689,19 @@ program Menu
 									!-----------------------------------------------
 								case('6')
 									print *, "REPORTES"
+									print *, "------------------------------"
+									print *, "RECORRIDOS DE CAPAS"
+									call lista_capas_m%search(username, binario_reporte)
+									print *, "---------preorden--------"
+									call binario_reporte%preorder(binario_rec%root,reporte_pre)
+									call reporte_pre%cola_clear()
+									print *, "---------postorden--------"
+									call binario_reporte%postorder(binario_rec%root,reporte_post)
+									call reporte_post%cola_clear()
+									print *, "---------inorden--------"
+									call binario_reporte%inorder(binario_rec%root,reporte_in)
+									call reporte_in%cola_clear()
+									print *, "------------------------------"
 								case('7')
 									print *, "salir del MODO CLIENTE..."
 									call avl_arbol_m%avl_clear()
@@ -600,12 +710,16 @@ program Menu
 									print *, "2"
 									call binario_cap%clear_binario()
 									print *, "23"
-									call binario_rec%clear_binario()
 									print *, "23"
 									call binario_post%clear_binario()
 									print *, "24"
 									call binario_in%clear_binario()
+									print *, "23"
 									call binario_esp%clear_binario()
+									print *, "23"
+									call binario_reporte%clear_binario()
+									print *, "23"
+									call binario_rec%clear_binario()
 									
 									print *, "3"
 									call bin_graficar%clear_binario()
