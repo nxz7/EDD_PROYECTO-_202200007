@@ -224,6 +224,73 @@ subroutine json_album(filename,lista_album)
     call json%destroy()
 end subroutine json_album
 
+subroutine json_cliente(filename)
+    use json_module
+    use btree
+    use user
+    implicit none
+
+    character(len=*), intent(in) :: filename
+    type(json_file) :: json
+    type(json_value), pointer :: listPointer, itemPointer, dpiPointer, nombrePointer, passwordPointer
+    type(json_core) :: jsonc
+    type(user_type) :: user
+
+    integer :: i, size, dpi_int
+    logical :: found
+    character(:), allocatable :: dpi, nombre, password
+
+    call json%initialize()
+    call json%load(filename=filename)
+
+    call json%get_core(jsonc)
+    call json%get('', listPointer, found)
+    !print *, 'Root found:', found
+
+    if (found) then
+        call json%info('', n_children=size)
+        !print *, 'Number of children:', size
+        do i = 1, size
+
+            call jsonc%get_child(listPointer, i, itemPointer, found)
+            print *, '-------------------'
+            if (found) then
+                user = user_type(0,"","") 
+                call jsonc%get_child(itemPointer, 'dpi', dpiPointer, found)
+                if (found) then
+                    call jsonc%get(dpiPointer, dpi)
+                    read(dpi, *) dpi_int
+                    print *, 'dpi:', trim(dpi), ', dpi_int:', dpi_int
+                    user%dpi = dpi_int
+                end if
+
+                call jsonc%get_child(itemPointer, 'nombre_cliente', nombrePointer, found)
+                if (found) then
+                    call jsonc%get(nombrePointer, nombre)
+                    print *, 'nombre_cliente:', trim(nombre)
+                    user%name = trim(nombre)
+                end if
+
+                call jsonc%get_child(itemPointer, 'password', passwordPointer, found)
+                if (found) then
+                    call jsonc%get(passwordPointer, password)
+                    print *, 'password:', trim(password)
+                    user%password = trim(password)
+                end if
+                call insert(user)
+                print *, '--------lista-------'
+                call lista_clientes(root)
+                print *, '---------------'
+            end if
+            
+        end do
+        
+    end if
+
+    call json%destroy()
+end subroutine json_cliente
+
+
 program Menu
 	use avldef
 	use lista_avl
@@ -235,6 +302,11 @@ program Menu
     use cola_module
 	use lista_album
     use lista_cliente_album
+	!arbol b de 5---
+    use btree
+    use user
+
+	!----------
 
 	implicit none
 	!-------avl-imagenes----------------
@@ -255,7 +327,9 @@ program Menu
 	!------album-------
 	type(List_of_list) :: lista_albumd, segunda
 	type(lista_album_img) :: lista_album_imgd
+!-------arbolB-clientes
 
+	type(user_type) :: my_user12,buscarUser,my_z,us_encontrado
 	!------------
     type(avl)::  avl_arbol_m
     type(linked_list):: lista_avl_m
@@ -266,12 +340,13 @@ program Menu
 	!------------------
     character(len=255) :: file_capas, file_imagenes, file_album, file_cliente
 	character(len=1) :: opcion, choice_images, sub_choice
-    character(len=100) :: username, password
+    character(len=300) :: username, password, insertar_nombre, insertar_password
 	logical :: loggedIn, encontrado,exit_images_menu, primer_recorrido
-	integer :: unit,num_capa
+	!unitnum
+	integer :: unit,num_capa,unitNum, buscardpi,insertar_dpi, username_int
 	character(len=100) :: filename,filebinario
 	integer :: valor_rec
-
+	
 	!----------------avl-imagenes------------------------
 	integer :: pr_id, recorrido, itera, numero_capa
 	!pruebasssssss	
@@ -279,6 +354,7 @@ program Menu
 	filename = 'avl_arb.dot'
 	filebinario='arbol_binario.dot'
 	unit = 1
+	unitNum = 2
 
 	!----------------------------------------------------
 
@@ -299,7 +375,7 @@ program Menu
 		select case(opcion)
 			case('1')
 				print *, "-----------------------INICIO DE SESION-----------------------"
-				print *, "Ingrese el nombre de usuario: "
+				print *, "INGRESE DPI -en caso de administrador las credenciales respectivas "
 				read(*,*) username
 				print *, "Ingrese la contraseña: "
 				read(*,*) password
@@ -323,12 +399,71 @@ program Menu
 							select case(opcion)
 								case('1')
 									print *, "CARGA MASIIVA DE CLIENTES"
+									print *, "ingrese nombre del archivo:"
+									read(*,*) file_cliente
+									call json_cliente(trim(file_cliente))
 								case('2')
 									print *, "ARBOL B - CLIENTES"
+									open(unit=unitNum, file='btree.dot', status='replace')
+									write(unitNum, '(A)') 'digraph btree {'
+									write(unitNum, '(A)') 'node [color=pink, style=filled]'
+									call grafo_b(root, unitNum)
+									write(unitNum, '(A)') '""} '
+									close(unitNum)
+									call execute_command_line('dot -Tsvg btree.dot > btree.svg')
+									call execute_command_line('start btree.svg')
+									print *, "************************"
+									print *, "arbol b generado con exito"
+									print *, "************************"
 								case('3')
 									print *, "REPORTES"
+									print *, '-----recorrido niveles------'
+									call lista_clientes(root)
+									print *, '----------------------------'
+									print *, "----------------------------"
+									print *, "ingrese dpi a buscar--------"
+									read(*,*) buscardpi
+									buscarUser = searchUser(root, buscardpi) ! dpi INT -buscra lo del dpi que se ingreso
+									if (buscarUser%dpi /= -1) then
+										print *, "nombre: ", buscarUser%name
+										print *, "dpi: ", buscarUser%dpi
+										print *, "password: ", buscarUser%password
+									else
+										print *, "no existe en el sistema."
+									end if
+									print *, "----------------------------"
 								case('4')
 									print *, "INSERTAR CLIENTE"
+									print *, "ingrese dpi:"
+									read(*,*) insertar_dpi
+									
+									print *, "ingrese nombre:"
+									read(*,*) insertar_nombre
+									print *, "ingrese contrasena:"
+									read(*,*) insertar_password
+									my_user12%dpi = insertar_dpi
+									my_user12%name = trim(insertar_nombre)
+									my_user12%password = trim(insertar_password)
+									print *, "*******************************"
+									print *, "******usuario ingresado********"
+									print *, "nombre: ", my_user12%name
+									print *, "dpi: ", my_user12%dpi
+									print *, "password: ", my_user12%password
+									call insert(my_user12)
+									print *, "*******************************"
+
+									print *, "****VISUALIZACION DE ESTRUCTURA MODIFICADA**"
+									fileName = 'btree_modificado.dot'
+									open(unit=unitNum, file=fileName, status='replace')
+									write(unitNum, '(A)') 'digraph btree {'
+									write(unitNum, '(A)') 'node [color=yellow, style=filled]'
+									call grafo_b_mod(root, unitNum)
+									write(unitNum, '(A)') '""} '
+									close(unitNum)
+									call execute_command_line('dot -Tsvg btree_modificado.dot > btree_modificado.svg')
+									call execute_command_line('start btree_modificado.svg')
+								
+
 								case('5')
 									print *, "MODIFICAR CLIENTE"
 								case('6')
@@ -353,7 +488,16 @@ program Menu
 					!----------------- MENU ADMINISTRADOR
 				else if (.not. loggedIn) then
 					print *, "buscando en el sistema"
-					print *, username
+					read(username, *) username_int
+					print *, username_int
+					us_encontrado= searchUser(root, username_int)
+					!----------comprobar que exista-------
+					if (username_int == us_encontrado%dpi .and. password == us_encontrado%password) then
+						encontrado = .true.
+					else
+						encontrado = .false.
+					end if
+			
 					!encontrado = .false.
 					if (encontrado .eqv. .true.) then
 						print *, "-----------------------------------"
@@ -749,6 +893,24 @@ program Menu
 
 			case('2')
 				print *, "-----------------------REGISTRO DE USUARIOS------------------------"
+				print *, "nuevo usuario ---> REGISTRO"
+				print *, "ingrese dpi:"
+				read(*,*) insertar_dpi
+									
+				print *, "ingrese nombre:"
+				read(*,*) insertar_nombre
+				print *, "ingrese contrasena:"
+				read(*,*) insertar_password
+				my_z%dpi = insertar_dpi
+				my_z%name = trim(insertar_nombre)
+				my_z%password = trim(insertar_password)
+				print *, "*******************************"
+				print *, "******usuario ingresado********"
+				print *, "nombre: ", my_z%name
+				print *, "dpi: ", my_z%dpi
+				print *, "password: ", my_z%password
+				call insert(my_z)
+				print *, "*******************************"
 
 			case('3')
 				! salir
@@ -760,3 +922,298 @@ program Menu
 	end do
 
 end program Menu
+
+
+
+module btree
+    use user
+    implicit none
+
+    integer, parameter :: MAXI = 4, MINI = 2
+
+    type nodeDELb
+        type(BarbolNode), pointer :: ptr => null()
+    end type nodeDELb
+
+    type BarbolNode
+        type(user_type), dimension(MAXI+1) :: val
+        integer :: num = 0
+        type(nodeDELb) :: link(0:MAXI)
+    end type BarbolNode
+
+    type(BarbolNode), pointer :: root => null()
+
+contains
+
+    subroutine insert(val)
+        type(user_type), intent(in) :: val
+        type(BarbolNode), pointer :: child
+
+        allocate(child)
+        if (setValue(val, root, child)) then
+            root => createNode(val, child)
+        end if
+    end subroutine insert
+
+    recursive function setValue(val, node, child) result(res)
+        type(user_type), intent(in) :: val
+        type(BarbolNode), pointer, intent(inout) :: node
+        type(BarbolNode), pointer, intent(inout) :: child
+        type(BarbolNode), pointer :: newnode        
+        integer :: pos
+        logical :: res
+        
+        if (.not. associated(node)) then
+            allocate(node)
+            node%val(1) = val
+            child => null()
+            res = .true.
+            return
+        end if
+        
+        if (val%dpi < node%val(1)%dpi) then
+            pos = 0
+        else
+            pos = node%num
+            do while (val%dpi < node%val(pos)%dpi .and. pos > 1)
+                pos = pos - 1
+            end do
+            if (val%dpi == node%val(pos)%dpi) then
+                print *, "cliente ya existe"
+                res = .false.
+                return
+            end if
+        end if
+        
+        if (setValue(val, node%link(pos)%ptr, child)) then
+            if (node%num < MAXI) then
+                call insertNode(val, pos, node, child)
+            else
+                call splitNode(val, pos, node, child, newnode)
+                child => newnode
+                res = .true.
+                return
+            end if
+        end if
+        res = .false.
+    end function setValue
+
+    subroutine insertNode(val, pos, node, child)
+        type(user_type), intent(in) :: val
+        type(BarbolNode), pointer, intent(inout) :: node
+        type(BarbolNode), pointer, intent(in) :: child
+        integer :: j,pos
+        
+        j = node%num
+        do while (j > pos)
+            node%val(j + 1) = node%val(j)
+            node%link(j + 1)%ptr => node%link(j)%ptr
+            j = j - 1
+        end do
+        node%val(j + 1) = val
+        node%link(j + 1)%ptr => child
+        node%num = node%num + 1
+    end subroutine insertNode
+
+    subroutine splitNode(val, pos, node, child, newnode)
+        type(user_type), intent(in) :: val
+        type(BarbolNode), pointer, intent(inout) :: node, newnode
+        type(BarbolNode), pointer, intent(in) :: child
+        integer :: median, i, j,pos
+        
+        allocate(newnode)
+        if (pos > MINI) then
+            median = MINI + 1
+        else
+            median = MINI
+        end if
+        j = median + 1
+        do while (j <= MAXI)
+            newnode%val(j - median) = node%val(j)
+            newnode%link(j - median)%ptr => node%link(j)%ptr
+            j = j + 1
+        end do
+        node%num = median
+        newnode%num = MAXI - median
+        if (pos <= MINI) then
+            call insertNode(val, pos, node, child)
+        else
+            call insertNode(val, pos - median, newnode, child)
+        end if        
+        newnode%link(0)%ptr => node%link(node%num)%ptr
+        node%num = node%num - 1
+    end subroutine splitNode
+
+    function createNode(val, child) result(newNode)
+        type(user_type), intent(in) :: val
+        type(BarbolNode), pointer, intent(in) :: child
+        type(BarbolNode), pointer :: newNode
+        integer :: i
+        
+        allocate(newNode)
+        newNode%val(1) = val
+        newNode%num = 1
+        newNode%link(0)%ptr => root
+        newNode%link(1)%ptr => child
+        do i = 2, MAXI
+            newNode%link(i)%ptr => null()
+        end do
+    end function createNode
+
+
+    recursive subroutine listado_ts(myNode)
+    type(BarbolNode), pointer, intent(in) :: myNode
+    integer :: i
+    
+    if (associated(myNode)) then
+        write (*, '(A)', advance='no') ' [ '
+        i = 0
+        !print *, myNode%num
+        do while (i < myNode%num)
+            write (*,'(A)', advance='no') myNode%val(i+1)%name
+            i = i + 1
+        end do
+        do i = 0, myNode%num
+            call listado_ts(myNode%link(i)%ptr)    
+        end do
+        write (*, '(A)', advance='no') ' ] '
+    end if
+    
+end subroutine listado_ts
+
+
+recursive subroutine grafo_b(myNode,unit)
+type(BarbolNode), pointer, intent(in) :: myNode
+integer, intent(in) :: unit
+integer :: i
+logical :: first_time_entered = .true.
+character(len=300) :: concatenated_names = ''
+
+if (associated(myNode)) then
+
+    if (first_time_entered) then
+        print *, "primero"
+        write (unit, '(A)', advance='no') ' arbolB ->'
+    else
+        write (unit, '(A,A,A,A)', advance='no') ' ',trim(concatenated_names),'  ',"->"
+        write (unit, '(A)', advance='no') '  '
+    end if
+    
+
+    i = 0
+    do while (i < myNode%num)
+        if (first_time_entered) then
+            concatenated_names = trim(concatenated_names) // myNode%val(i+1)%name //' '
+            i=myNode%num
+        else
+
+            write (unit, '(A)', advance='no') myNode%val(i+1)%name
+        end if
+        i = i + 1
+    end do
+
+    if (first_time_entered) then
+        write (unit, '(A)', advance='no') '   '
+        write (unit, '(A)', advance='no') trim(concatenated_names)
+        write (unit, '(A)', advance='no') '  '
+        first_time_entered = .false.
+    end if
+
+    do i = 0, myNode%num
+        call grafo_b(myNode%link(i)%ptr,unit)    
+    end do
+    write (unit, '(A)', advance='no') '  '
+
+end if
+!first_time_entered = .true.
+end subroutine grafo_b
+
+recursive subroutine lista_clientes(amp)
+type(BarbolNode), pointer, intent(in) :: amp
+integer :: i
+
+if (associated(amp)) then
+    i = 0
+    do while (i < amp%num)
+        write (*,'(A)', advance='no') amp%val(i+1)%name
+        write (*,'(A)', advance='no') ","
+        i = i + 1
+    end do
+    do i = 0, amp%num
+        call lista_clientes(amp%link(i)%ptr)    
+    end do
+end if
+
+end subroutine lista_clientes
+
+recursive function searchUser(node, dpi) result(foundUser)
+    type(BarbolNode), pointer, intent(in) :: node
+    integer, intent(in) :: dpi
+    type(user_type) :: foundUser
+    integer :: i, position
+
+    if (associated(node)) then
+        position = 1
+        do while (position <= node%num .and. dpi > node%val(position)%dpi)
+            position = position + 1
+        end do
+
+        if (position <= node%num .and. dpi == node%val(position)%dpi) then
+            foundUser = node%val(position)
+        else
+            if (position == 1) then
+                foundUser = searchUser(node%link(0)%ptr, dpi)
+            else
+                foundUser = searchUser(node%link(position - 1)%ptr, dpi)
+            end if
+        end if
+    end if
+end function searchUser
+
+
+recursive subroutine grafo_b_mod(myNode,unit)
+type(BarbolNode), pointer, intent(in) :: myNode
+integer, intent(in) :: unit
+integer :: i
+logical :: first_time_entered = .true.
+character(len=300) :: concatenated_names = ''
+
+if (associated(myNode)) then
+
+    if (first_time_entered) then
+        print *, "primero"
+        write (unit, '(A)', advance='no') ' arbolB ->'
+    else
+        write (unit, '(A,A,A,A)', advance='no') ' ',trim(concatenated_names),' ',"->"
+        write (unit, '(A)', advance='no') ' '
+    end if
+    
+
+    i = 0
+    do while (i < myNode%num)
+        if (first_time_entered) then
+            concatenated_names = trim(concatenated_names) // myNode%val(i+1)%name //' '
+            i=myNode%num
+        else
+            write (unit, '(A)', advance='no') myNode%val(i+1)%name
+
+        end if
+        i = i + 1
+    end do
+
+    if (first_time_entered) then
+        write (unit, '(A)', advance='no') '  '
+        write (unit, '(A)', advance='no') trim(concatenated_names)
+        write (unit, '(A)', advance='no') ' '
+        first_time_entered = .false.
+    end if
+
+    do i = 0, myNode%num
+        call grafo_b_mod(myNode%link(i)%ptr,unit)    
+    end do
+    write (unit, '(A)', advance='no') ' '
+
+end if
+!first_time_entered = .true.
+end subroutine grafo_b_mod
+end module btree

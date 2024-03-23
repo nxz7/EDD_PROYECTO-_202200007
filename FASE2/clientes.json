@@ -2,16 +2,31 @@
     {
         "dpi":"075551011",
         "nombre_cliente":"natalia",
-        "password":"1234"
+        "password":"nataliacontra"
     },
     {
         "dpi":"075545765",
         "nombre_cliente":"maria",
-        "password":"4545"
+        "password":"mariacontra"
     },
     {
         "dpi":"08005964",
         "nombre_cliente":"pepe",
-        "password":"04155"
+        "password":"pepecontra"
+    },
+    {
+        "dpi":"09005964",
+        "nombre_cliente":"tachi",
+        "password":"tachicontra"
+    },
+    {
+        "dpi":"08005984",
+        "nombre_cliente":"nono",
+        "password":"nonocontra"
+    },
+    {
+        "dpi":"00027869",
+        "nombre_cliente":"raiz",
+        "password":"raizcontra"
     }
 ]
