@@ -1,4 +1,4 @@
-module bstdef
+module bst_tree
     use matrix_spar
     use cola_module
 
@@ -226,4 +226,4 @@ module bstdef
 
 !-----------------------------------------                
                 
-end module bstdef
+end module bst_tree

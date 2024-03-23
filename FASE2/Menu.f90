@@ -1,6 +1,6 @@
 subroutine json_capas(filename, bst_arbol, bst_matrix, username)
     use json_module
-    use bstdef
+    use bst_tree
     use matrix_spar
 
     implicit none
@@ -92,7 +92,7 @@ end subroutine json_capas
 
 subroutine json_imagenes(filename, avl_arbol, lista_avl, username)
         use json_module
-        use avldef
+        use avl_tree
         use lista_avl
         !use lista_cliente_img
 
@@ -292,11 +292,11 @@ end subroutine json_cliente
 
 
 program Menu
-	use avldef
+	use avl_tree
 	use lista_avl
 	use lista_cliente_img
 	!---binario--------
-	use bstdef
+	use bst_tree
     use lista_cliente_capas
     use matrix_spar
     use cola_module
@@ -508,6 +508,7 @@ program Menu
 						print *, "4. VISUALIZAR ESTRUCTURAS"
 						print *, "5. GENERAR IMAGENES"
 						print *, "6. REPORTES"
+						
 						print *, "7. salir del MODO CLIENTE"
 						print *, "-----------------------------------"
 						do
@@ -619,7 +620,9 @@ program Menu
 														read(*, *) recorrido
 														!recorrido=recorrido+1
 														call lista_capas_m%search(username, binario_rec)
+														print *, "preorden --> "
 														call binario_rec%preorder(binario_rec%root,cola_prez)
+														print *, "---------------------------------------------"
 														do while (recorrido > 0)
 															if (primer_recorrido .eqv. .true.) then
 																call cola_prez%delete(valor_rec)
@@ -671,7 +674,9 @@ program Menu
 														read(*, *) recorrido
 														!recorrido=recorrido+1
 														call lista_capas_m%search(username, binario_post)
+														print *, "postorden --> "
 														call binario_post%postorder(binario_post%root,cola_posto)
+														print *, "--------------------------------------------- "
 														do while (recorrido > 0)
 															if (primer_recorrido .eqv. .true.) then
 																call cola_posto%delete(valor_rec)
@@ -721,7 +726,9 @@ program Menu
 														read(*, *) recorrido
 														!recorrido=recorrido+1
 														call lista_capas_m%search(username, binario_in)
+														print *, "inorden --> "
 														call binario_in%inorder(binario_in%root,cola_inor)
+														print *, "----------------------------------- "
 														do while (recorrido > 0)
 															if (primer_recorrido .eqv. .true.) then
 																call cola_inor%delete(valor_rec)
@@ -846,6 +853,8 @@ program Menu
 									call binario_reporte%inorder(binario_rec%root,reporte_in)
 									call reporte_in%cola_clear()
 									print *, "------------------------------"
+
+							
 								case('7')
 									print *, "salir del MODO CLIENTE..."
 									call avl_arbol_m%avl_clear()
@@ -853,16 +862,16 @@ program Menu
 									
 									print *, "2"
 									call binario_cap%clear_binario()
-									print *, "23"
-									print *, "23"
+									print *, "3"
+									print *, "33"
 									call binario_post%clear_binario()
-									print *, "24"
+									print *, "34"
 									call binario_in%clear_binario()
-									print *, "23"
+									print *, "33"
 									call binario_esp%clear_binario()
-									print *, "23"
+									print *, "34"
 									call binario_reporte%clear_binario()
-									print *, "23"
+									print *, "33"
 									call binario_rec%clear_binario()
 									
 									print *, "3"

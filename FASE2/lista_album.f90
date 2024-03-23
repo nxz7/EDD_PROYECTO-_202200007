@@ -95,24 +95,24 @@ contains
         type(node_album), pointer :: aux
         type(sub_node), pointer :: sub_aux
 
-        ! Traverse the list_of_list
+        
         aux => self%head
         do while(associated(aux))
-            ! Print the index
+            
             print *, 'Cliente:', aux%value
 
-            ! Traverse the subnodes and group them by value
+            
             sub_aux => aux%list
             do while(associated(sub_aux))
-                ! Print subnodes with the same value together
+                
                 print *, '  imagen:', sub_aux%index
                 sub_aux => sub_aux%next
             end do
 
-            ! Move to the next node
+            ! siguiente
             aux => aux%next
 
-            ! Add an empty line between different characters
+            
             print *, ""
         end do
     end subroutine printList
@@ -151,7 +151,7 @@ contains
         end do
     end subroutine delete
 
-    !Subroutine and functions of sub node
+    !Subnodo
     subroutine append(self, index)
         class(node_album), intent(inout) :: self
         integer, intent(in):: index

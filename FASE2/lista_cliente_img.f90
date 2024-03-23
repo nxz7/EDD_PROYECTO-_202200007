@@ -1,5 +1,5 @@
 module lista_cliente_img
-    use avldef
+    use avl_tree
     implicit none
     private
 

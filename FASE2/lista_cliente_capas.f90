@@ -1,5 +1,5 @@
 module lista_cliente_capas
-    use bstdef
+    use bst_tree
     implicit none
     private
 

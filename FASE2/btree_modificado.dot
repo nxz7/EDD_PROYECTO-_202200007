@@ -1,4 +1,5 @@
 graph{
+  node [color=green, style=filled];
      3 [label="   11"];
      3 --     4;
      3 --     2;

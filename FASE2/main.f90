@@ -1,6 +1,6 @@
 subroutine json_capas(filename, bst_arbol, bst_matrix, username)
     use json_module
-    use bstdef
+    use bst_tree
     use matrix_spar
 
     implicit none
@@ -92,7 +92,7 @@ end subroutine json_capas
 
 subroutine json_imagenes(filename, avl_arbol, lista_avl, username)
         use json_module
-        use avldef
+        use avl_tree
         use lista_avl
         !use lista_cliente_img
 
@@ -273,10 +273,10 @@ end subroutine json_cliente
 
 
 program main
-    use avldef
+    use avl_tree
     use lista_avl
     use lista_cliente_img
-    use bstdef
+    use bst_tree
     use matrix_spar
     use lista_cliente_capas
     

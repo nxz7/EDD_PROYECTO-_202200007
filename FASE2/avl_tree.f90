@@ -1,4 +1,4 @@
-module avldef
+module avl_tree
     use lista_avl
     implicit none
     integer :: id = 1
@@ -190,6 +190,7 @@ subroutine dotgen(this, tmp, unit)
         type(node), intent(in), pointer :: tmp
         integer, intent(in) :: unit
     write(unit, '(A)') 'graph{'
+    write(unit, "(A)") "  node [color=green, style=filled];"
     call this%dotgen_rec(tmp, unit)
     write(unit, '(A)') '}'
 end subroutine dotgen
@@ -220,10 +221,10 @@ subroutine get_list_by_value(this, value, lista)
 
     current_node => this%root
 
-    ! Search for the node with the given value
+    ! busca el nodo con el valor dado
     do while (associated(current_node))
         if (current_node%value == value) then
-            ! Return the linked list associated with the node
+            ! regresa la listaaaaaaaaaaaa
             lista = current_node%linked_list_data
             exit
         else if (value < current_node%value) then
@@ -254,4 +255,4 @@ end subroutine avl_clear
         end subroutine clear_nodes
 
 
-end module avldef
+end module avl_tree
