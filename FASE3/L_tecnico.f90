@@ -1,0 +1,229 @@
+module L_tecnico
+    implicit none
+    private
+
+    type, public :: node
+        private
+        integer :: value
+        integer :: dpi, telefono, sucursal
+        character(:), allocatable ::  name, apellido, genero, direccion
+        type(node), pointer :: next     
+    end type node
+
+    type, public :: cola
+        private
+        type(node), pointer :: head => null()
+        type(node), pointer :: tail => null()
+    contains
+        procedure :: append
+        procedure :: print
+        procedure :: bubble_sort
+        procedure :: print_5
+        procedure :: find_and_print
+        procedure :: increment_value
+    end type cola
+
+contains
+
+    subroutine append(this, value,dpi, telefono,name, apellido, genero, direccion, sucursal)
+        class(cola), intent(inout) :: this
+        integer, intent(in) :: value
+        integer, intent(in) :: dpi, telefono,sucursal 
+        character(:), allocatable, intent(in) ::  name, apellido, genero, direccion
+
+        type(node), pointer :: temp
+        allocate(temp)
+        temp%value = value
+        temp%dpi = dpi
+        temp%telefono = telefono
+        temp%name = name
+        temp%apellido = apellido
+        temp%genero = genero
+        temp%direccion = direccion
+        temp%sucursal = sucursal
+        temp%next => null()
+
+        if (.not. associated(this%head)) then
+            this%head => temp
+            this%tail => temp
+        else
+            this%tail%next => temp
+            this%tail => temp
+        end if
+
+        print *, '--- ', value
+    end subroutine append
+
+    subroutine print(this, target_sucursal)
+        class(cola), intent(in) :: this
+        integer, intent(in) :: target_sucursal
+        type(node), pointer :: current
+    
+        current => this%head
+    
+        print *, '********************************************'
+        print *, 'Listado de técnicos de la sucursal ', target_sucursal, ':'
+        print *, '********************************************'
+    
+        do while (associated(current))
+            if (current%sucursal == target_sucursal) then
+                print *, '>trabajos:', current%value
+                print *, '>DPI:', current%dpi
+                print *, '>Telefono:', current%telefono
+                print *, '>Nombre:', current%name
+                print *, '>Apellido:', current%apellido
+                print *, '>Genero:', current%genero
+                print *, '>Direccion:', current%direccion
+                print *, '>Sucursal:', current%sucursal
+                print *, '********************************************'
+            end if
+            current => current%next
+        end do 
+    end subroutine print
+    
+
+    subroutine bubble_sort(this)
+        class(cola), intent(inout) :: this
+        type(node), pointer :: current, next_node
+        integer :: temp
+
+        if (.not. associated(this%head)) then
+            print *, 'NO HAY TECNICO ES LA SUCURSAL'
+            return
+        end if
+
+        current => this%head
+        do while(associated(current))
+            next_node => current%next
+            do while(associated(next_node))
+                if (current%value < next_node%value) then
+                    temp = current%value
+                    current%value = next_node%value
+                    next_node%value = temp
+                end if
+                next_node => next_node%next
+            end do
+            current => current%next
+        end do
+    end subroutine bubble_sort
+
+!falta buscar por nombre y sumar contador
+
+
+    subroutine print_5(this, target_sucursal)
+        class(cola), intent(in) :: this
+        integer, intent(in) :: target_sucursal
+        type(node), pointer :: current
+        integer :: count
+    
+        current => this%head
+        count = 0
+    
+        print *, '********************************************'
+        print *, 'TOP 5 TECNICOS DE LA SUCURSAL:', target_sucursal, ':'
+        print *, '********************************************'
+    
+        do while (associated(current) .and. count < 5)
+            if (current%sucursal == target_sucursal) then
+                print *, 'TRABAJOS:', current%value
+                print *, 'DPI:', current%dpi
+                print *, 'Telefono:', current%telefono
+                print *, 'Nombre:', current%name
+                print *, 'Apellido:', current%apellido
+                print *, 'Genero:', current%genero
+                print *, 'Dirección:', current%direccion
+                print *, 'Sucursal:', current%sucursal
+                print *, '********************************************'
+                count = count + 1
+            end if
+            current => current%next
+        end do 
+    end subroutine print_5
+    
+    subroutine find_and_print(this, target_dpi, target_sucursal)
+        class(cola), intent(in) :: this
+        integer, intent(in) :: target_dpi, target_sucursal
+        type(node), pointer :: current
+        
+        current => this%head
+        
+        print *, '********************************************'
+        print *, 'Tecnico encontrado con DPI:', target_dpi, 'en la sucursal:', target_sucursal
+        print *, '********************************************'
+    
+        do while (associated(current))
+            if (current%dpi == target_dpi .and. current%sucursal == target_sucursal) then
+                print *, 'TRABAJOS:', current%value
+                print *, 'DPI:', current%dpi
+                print *, 'Telefono:', current%telefono
+                print *, 'Nombre:', current%name
+                print *, 'Apellido:', current%apellido
+                print *, 'Genero:', current%genero
+                print *, 'Dirección:', current%direccion
+                print *, 'Sucursal:', current%sucursal
+                print *, '********************************************'
+                return
+            end if
+            current => current%next
+        end do 
+        
+        print *, 'No se encontró ningún técnico con DPI:', target_dpi, 'en la sucursal:', target_sucursal
+        print *, '********************************************'
+    end subroutine find_and_print
+    
+
+    !incrementa trabajos de cliente y sucursal
+        subroutine increment_value(this, target_dpi, target_sucursal)
+            class(cola), intent(inout) :: this
+            integer, intent(in) :: target_dpi, target_sucursal
+            type(node), pointer :: current
+            
+            current => this%head
+            
+            do while (associated(current))
+                if (current%dpi == target_dpi .and. current%sucursal == target_sucursal) then
+                    current%value = current%value + 1
+                    return
+                end if
+                current => current%next
+            end do
+            
+            print *, 'No se encontró ningún técnico con DPI:', target_dpi, 'en la sucursal:', target_sucursal
+        end subroutine increment_value
+
+
+end module L_tecnico
+
+program main
+    use L_tecnico
+    implicit none
+
+    type(cola) :: my_cola
+    character(:), allocatable ::  name, apellido,genero, direccion
+    apellido=  'Perez'
+    genero = 'M'
+    direccion = 'Zona 1'
+    name='Juan'
+    call my_cola%append(5, 123456189, 12345678, name, apellido, genero, direccion,7)
+    call my_cola%append(3, 123456289, 12345678, name, apellido, genero, direccion, 6)
+    call my_cola%append(2, 123456389, 12345678, name, apellido, genero, direccion, 5)
+    call my_cola%append(11, 123456489, 12345678, name, apellido, genero, direccion,7)
+    call my_cola%append(7, 123456759, 12345678, name, apellido, genero, direccion,7)
+    call my_cola%append(2, 123456689, 12345678, name, apellido, genero, direccion,7)
+    call my_cola%append(4, 123456789, 12345678, name, apellido, genero, direccion, 7)
+    call my_cola%append(14, 123456889, 12345678, name, apellido, genero, direccion, 7)
+    call my_cola%append(15, 123456989, 12345678, name, apellido, genero, direccion,7)
+    call my_cola%append(7, 123456109, 12345678, name, apellido, genero, direccion,7)
+    call my_cola%append(9, 123456119, 12345678, name, apellido, genero, direccion,5)
+    call my_cola%print(7)
+
+    call my_cola%bubble_sort()
+
+    call my_cola%print(7)
+    call my_cola%print_5(7)
+
+    call my_cola%find_and_print(123456109, 7)
+    call my_cola%increment_value(123456109, 7)
+    call my_cola%increment_value(123456109, 7)
+    call my_cola%find_and_print(123456109, 7)
+end program main
