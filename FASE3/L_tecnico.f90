@@ -4,7 +4,7 @@ module L_tecnico
 
     type, public :: node
         private
-        integer :: value
+        integer :: value  
         integer :: dpi, telefono, sucursal
         character(:), allocatable ::  name, apellido, genero, direccion
         type(node), pointer :: next     
@@ -84,29 +84,61 @@ contains
 
     subroutine bubble_sort(this)
         class(cola), intent(inout) :: this
-        type(node), pointer :: current, next_node
-        integer :: temp
-
+        type(node), pointer :: current, next_node, temp_node
+        integer :: temp_value, temp_dpi, temp_telefono
+        character(:), allocatable :: temp_name, temp_apellido, temp_genero, temp_direccion
+        integer :: temp_sucursal
+    
         if (.not. associated(this%head)) then
             print *, 'NO HAY TECNICO ES LA SUCURSAL'
             return
         end if
-
+    
         current => this%head
         do while(associated(current))
             next_node => current%next
             do while(associated(next_node))
                 if (current%value < next_node%value) then
-                    temp = current%value
+                    ! Swap values
+                    temp_value = current%value
                     current%value = next_node%value
-                    next_node%value = temp
+                    next_node%value = temp_value
+                    
+                    ! Swap other attributes
+                    temp_dpi = current%dpi
+                    current%dpi = next_node%dpi
+                    next_node%dpi = temp_dpi
+    
+                    temp_telefono = current%telefono
+                    current%telefono = next_node%telefono
+                    next_node%telefono = temp_telefono
+                    
+                    temp_name = current%name
+                    current%name = next_node%name
+                    next_node%name = temp_name
+                    
+                    temp_apellido = current%apellido
+                    current%apellido = next_node%apellido
+                    next_node%apellido = temp_apellido
+                    
+                    temp_genero = current%genero
+                    current%genero = next_node%genero
+                    next_node%genero = temp_genero
+                    
+                    temp_direccion = current%direccion
+                    current%direccion = next_node%direccion
+                    next_node%direccion = temp_direccion
+                    
+                    temp_sucursal = current%sucursal
+                    current%sucursal = next_node%sucursal
+                    next_node%sucursal = temp_sucursal
                 end if
                 next_node => next_node%next
             end do
             current => current%next
         end do
     end subroutine bubble_sort
-
+    
 !falta buscar por nombre y sumar contador
 
 
@@ -148,7 +180,7 @@ contains
         current => this%head
         
         print *, '********************************************'
-        print *, 'Tecnico encontrado con DPI:', target_dpi, 'en la sucursal:', target_sucursal
+        print *, 'bucando tecnico con DPI:', target_dpi, 'en la sucursal:', target_sucursal
         print *, '********************************************'
     
         do while (associated(current))
@@ -204,26 +236,29 @@ program main
     genero = 'M'
     direccion = 'Zona 1'
     name='Juan'
-    call my_cola%append(5, 123456189, 12345678, name, apellido, genero, direccion,7)
-    call my_cola%append(3, 123456289, 12345678, name, apellido, genero, direccion, 6)
-    call my_cola%append(2, 123456389, 12345678, name, apellido, genero, direccion, 5)
-    call my_cola%append(11, 123456489, 12345678, name, apellido, genero, direccion,7)
-    call my_cola%append(7, 123456759, 12345678, name, apellido, genero, direccion,7)
-    call my_cola%append(2, 123456689, 12345678, name, apellido, genero, direccion,7)
-    call my_cola%append(4, 123456789, 12345678, name, apellido, genero, direccion, 7)
-    call my_cola%append(14, 123456889, 12345678, name, apellido, genero, direccion, 7)
-    call my_cola%append(15, 123456989, 12345678, name, apellido, genero, direccion,7)
-    call my_cola%append(7, 123456109, 12345678, name, apellido, genero, direccion,7)
-    call my_cola%append(9, 123456119, 12345678, name, apellido, genero, direccion,5)
-    call my_cola%print(7)
+    call my_cola%append(5, 557, 12345678, name, apellido, genero, direccion,7)
+    call my_cola%append(3, 336, 12345678, name, apellido, genero, direccion, 6)
+    call my_cola%append(2, 225, 12345678, name, apellido, genero, direccion, 5)
+    call my_cola%append(11, 117, 12345678, name, apellido, genero, direccion,7)
+    call my_cola%append(8, 887, 12345678, name, apellido, genero, direccion,7)
+    call my_cola%append(2, 227, 12345678, name, apellido, genero, direccion,7)
+    call my_cola%append(4, 447, 12345678, name, apellido, genero, direccion, 7)
+    call my_cola%append(14, 14147, 12345678, name, apellido, genero, direccion, 7)
+    call my_cola%append(15, 15157, 12345678, name, apellido, genero, direccion,7)
+    call my_cola%append(7, 777, 12345678, name, apellido, genero, direccion,7)
+    call my_cola%append(9, 995, 12345678, name, apellido, genero, direccion,5)
+    !call my_cola%print(7)
 
     call my_cola%bubble_sort()
 
-    call my_cola%print(7)
+
     call my_cola%print_5(7)
 
-    call my_cola%find_and_print(123456109, 7)
-    call my_cola%increment_value(123456109, 7)
-    call my_cola%increment_value(123456109, 7)
-    call my_cola%find_and_print(123456109, 7)
+    call my_cola%find_and_print(777, 7)
+    call my_cola%increment_value(15157, 7)
+    call my_cola%increment_value(15157, 7)
+    call my_cola%bubble_sort()
+    call my_cola%print_5(7)
+
+    call my_cola%find_and_print(995, 7)
 end program main

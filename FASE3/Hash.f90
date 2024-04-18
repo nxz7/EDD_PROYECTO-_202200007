@@ -180,6 +180,6 @@ program main
     call table%search(5)
     call table%grafico(filename)
     call execute_command_line('dot -Tsvg hash_table.dot > hash_table.svg')
-	call execute_command_line('start hash_table.svg')
+    call execute_command_line('start hash_table.svg')
 
 end program main
