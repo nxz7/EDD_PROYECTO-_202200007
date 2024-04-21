@@ -1,3 +1,4 @@
+
 module L_tecnico
     implicit none
     private
@@ -10,7 +11,7 @@ module L_tecnico
         type(node), pointer :: next     
     end type node
 
-    type, public :: cola
+    type, public :: tec
         private
         type(node), pointer :: head => null()
         type(node), pointer :: tail => null()
@@ -21,12 +22,12 @@ module L_tecnico
         procedure :: print_5
         procedure :: find_and_print
         procedure :: increment_value
-    end type cola
+    end type tec
 
 contains
 
     subroutine append(this, value,dpi, telefono,name, apellido, genero, direccion, sucursal)
-        class(cola), intent(inout) :: this
+        class(tec), intent(inout) :: this
         integer, intent(in) :: value
         integer, intent(in) :: dpi, telefono,sucursal 
         character(:), allocatable, intent(in) ::  name, apellido, genero, direccion
@@ -55,7 +56,7 @@ contains
     end subroutine append
 
     subroutine print(this, target_sucursal)
-        class(cola), intent(in) :: this
+        class(tec), intent(in) :: this
         integer, intent(in) :: target_sucursal
         type(node), pointer :: current
     
@@ -83,7 +84,7 @@ contains
     
 
     subroutine bubble_sort(this)
-        class(cola), intent(inout) :: this
+        class(tec), intent(inout) :: this
         type(node), pointer :: current, next_node, temp_node
         integer :: temp_value, temp_dpi, temp_telefono
         character(:), allocatable :: temp_name, temp_apellido, temp_genero, temp_direccion
@@ -143,7 +144,7 @@ contains
 
 
     subroutine print_5(this, target_sucursal)
-        class(cola), intent(in) :: this
+        class(tec), intent(in) :: this
         integer, intent(in) :: target_sucursal
         type(node), pointer :: current
         integer :: count
@@ -173,7 +174,7 @@ contains
     end subroutine print_5
     
     subroutine find_and_print(this, target_dpi, target_sucursal)
-        class(cola), intent(in) :: this
+        class(tec), intent(in) :: this
         integer, intent(in) :: target_dpi, target_sucursal
         type(node), pointer :: current
         
@@ -206,7 +207,7 @@ contains
 
     !incrementa trabajos de cliente y sucursal
         subroutine increment_value(this, target_dpi, target_sucursal)
-            class(cola), intent(inout) :: this
+            class(tec), intent(inout) :: this
             integer, intent(in) :: target_dpi, target_sucursal
             type(node), pointer :: current
             
@@ -225,40 +226,3 @@ contains
 
 
 end module L_tecnico
-
-program main
-    use L_tecnico
-    implicit none
-
-    type(cola) :: my_cola
-    character(:), allocatable ::  name, apellido,genero, direccion
-    apellido=  'Perez'
-    genero = 'M'
-    direccion = 'Zona 1'
-    name='Juan'
-    call my_cola%append(5, 557, 12345678, name, apellido, genero, direccion,7)
-    call my_cola%append(3, 336, 12345678, name, apellido, genero, direccion, 6)
-    call my_cola%append(2, 225, 12345678, name, apellido, genero, direccion, 5)
-    call my_cola%append(11, 117, 12345678, name, apellido, genero, direccion,7)
-    call my_cola%append(8, 887, 12345678, name, apellido, genero, direccion,7)
-    call my_cola%append(2, 227, 12345678, name, apellido, genero, direccion,7)
-    call my_cola%append(4, 447, 12345678, name, apellido, genero, direccion, 7)
-    call my_cola%append(14, 14147, 12345678, name, apellido, genero, direccion, 7)
-    call my_cola%append(15, 15157, 12345678, name, apellido, genero, direccion,7)
-    call my_cola%append(7, 777, 12345678, name, apellido, genero, direccion,7)
-    call my_cola%append(9, 995, 12345678, name, apellido, genero, direccion,5)
-    !call my_cola%print(7)
-
-    call my_cola%bubble_sort()
-
-
-    call my_cola%print_5(7)
-
-    call my_cola%find_and_print(777, 7)
-    call my_cola%increment_value(15157, 7)
-    call my_cola%increment_value(15157, 7)
-    call my_cola%bubble_sort()
-    call my_cola%print_5(7)
-
-    call my_cola%find_and_print(995, 7)
-end program main

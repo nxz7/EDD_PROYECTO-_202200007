@@ -3,7 +3,7 @@ module hash_table_m
     private
     integer :: M = 7
     real :: R = 0.618034
-    integer, parameter :: long = selected_int_kind(4)
+    integer, parameter :: long = selected_int_kind(18)
     integer, parameter :: dp = selected_real_kind(15)
 
     type, public :: HashTable
@@ -36,7 +36,7 @@ contains
             call self%linealProbe(pos)
         end if
 
-        self%table(pos)=key
+        self%table(pos) = int(key, kind=4)
         self%elements = self%elements + 1
         if(self%elements * 1.0_dp/M > 0.75) then
             temp = self%table
@@ -84,7 +84,7 @@ contains
         real :: t
         integer :: v
 
-        t = R*x - floor(R*x)
+        t = real(R*real(x,kind=4), kind=4) - real(floor(R*real(x,kind=4)), kind=4)
         v = floor(M*t)
     end function dispersion
 
@@ -117,7 +117,7 @@ contains
     
         unit = 10  
         open(unit, file=filename, status='replace')
-    
+        print *, "GRAFICANDO HASH"
         write(unit, '(A)') 'digraph HashTable {'
         write(unit, '(A)') '  node [shape=plaintext];'
         write(unit, '(A)') '  hash_table [label=<'
@@ -134,11 +134,14 @@ contains
         
         write(unit, '(A)') '      <TR>'
         write(unit, '(A)') '        <TD>tecnicos</TD>' ! Label for the row
+        !print *, "GRAFICANDO"
         do i = 0, size(self%table) - 1
             if (self%table(i) /= -1) then
                 write(unit, '(A,I0,A)') '        <TD>', self%table(i), '</TD>'
+                !print *, "DO IF"
             else
                 write(unit, '(A)') '        <TD>-1</TD>'
+                !print *, "DO ELSE"
             end if
         end do
         write(unit, '(A)') '      </TR>'
@@ -153,33 +156,3 @@ contains
     
 
 end module hash_table_m
-
-program main
-    use hash_table_m
-    implicit none
-
-    type(HashTable) :: table
-    integer, parameter :: long = selected_int_kind(4)
-    character(len=100) :: filename
-
-    ! Define the filename for the DOT file
-    filename = 'hash_table.dot'
-
-    call table%insert(int(5, kind=long))
-    call table%insert(int(522, kind=long))
-    call table%insert(int(16, kind=long))
-    call table%insert(int(1, kind=long))
-    call table%insert(int(18, kind=long))
-    call table%insert(int(29, kind=long))
-    call table%insert(int(42, kind=long))
-    call table%insert(int(500, kind=long))
-    call table%insert(int(60, kind=long))
-    call table%insert(int(70, kind=long))
-    call table%insert(int(1, kind=long))
-    call table%print()
-    call table%search(5)
-    call table%grafico(filename)
-    call execute_command_line('dot -Tsvg hash_table.dot > hash_table.svg')
-    call execute_command_line('start hash_table.svg')
-
-end program main

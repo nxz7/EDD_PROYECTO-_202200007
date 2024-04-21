@@ -1,0 +1,39 @@
+[
+    {
+        "id": 1,
+        "departamento": "Guatemala",
+        "direccion": "ova calle A ZONA 1",
+        "password": "12345"
+
+    },
+    {
+        "id": 3,
+        "departamento": "Guatemala",
+        "direccion": "ova calle A ZONA 2",
+        "password": "6789"
+    },
+    {
+        "id": 2,
+        "departamento": "Huehuetenango",
+        "direccion": "ova calle A ZONA 3",
+        "password": "12345"
+    },
+    {
+        "id": 4,
+        "departamento": "Huehuetenango",
+        "direccion": "ova calle A ZONA 4",
+        "password": "6789"
+    },
+    {
+        "id": 5,
+        "departamento": "Zacapa",
+        "direccion": "ova calle A ZONA 5",
+        "password": "12345"
+    },
+    {
+        "id": 6,
+        "departamento": "Guatemala",
+        "direccion": "ova calle A ZONA 6",
+        "password": "6789"
+    }
+]

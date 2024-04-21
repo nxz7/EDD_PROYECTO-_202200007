@@ -8,7 +8,7 @@ module suc
         type(node_s), pointer :: next     
     end type node_s
 
-    type, public :: cola
+    type, public :: sucursal
         private
         type(node_s), pointer :: head => null()
         type(node_s), pointer :: tail => null()
@@ -19,12 +19,14 @@ module suc
         procedure :: add_value
         procedure :: add_costos
         procedure :: add_ganancias
-    end type cola
+        procedure :: sum_ganancias
+        procedure :: sum_costos
+    end type sucursal
 
 contains
 
     subroutine append(this, value, id, costos, ganancias)
-        class(cola), intent(inout) :: this
+        class(sucursal), intent(inout) :: this
         integer, intent(in) :: value, id, costos, ganancias
 
         type(node_s), pointer :: temp
@@ -43,11 +45,11 @@ contains
             this%tail => temp
         end if
 
-        print *, 'Append ', value
+        print *, 'agregando sucursales: ', id
     end subroutine append
 
     subroutine print(this)
-        class(cola), intent(in) :: this
+        class(sucursal), intent(in) :: this
         type(node_s), pointer :: current
         integer :: counter
         
@@ -71,7 +73,7 @@ contains
     
 
     subroutine bubble_sort(this)
-        class(cola), intent(inout) :: this
+        class(sucursal), intent(inout) :: this
         type(node_s), pointer :: current, next_node, temp_node
         integer :: temp_value, temp_id, temp_costos, temp_ganancias
     
@@ -110,7 +112,7 @@ contains
     end subroutine bubble_sort
     
     subroutine add_value(this, id)
-        class(cola), intent(inout) :: this
+        class(sucursal), intent(inout) :: this
         integer, intent(in) :: id
         type(node_s), pointer :: current
         
@@ -126,7 +128,7 @@ contains
     end subroutine add_value
     
     subroutine add_costos(this, id, amount_to_add)
-        class(cola), intent(inout) :: this
+        class(sucursal), intent(inout) :: this
         integer, intent(in) :: id, amount_to_add
         type(node_s), pointer :: current
         
@@ -142,7 +144,7 @@ contains
     end subroutine add_costos
     
     subroutine add_ganancias(this, id, amount_to_ganancias)
-        class(cola), intent(inout) :: this
+        class(sucursal), intent(inout) :: this
         integer, intent(in) :: id, amount_to_ganancias
         type(node_s), pointer :: current
         
@@ -157,27 +159,34 @@ contains
         end do
     end subroutine add_ganancias
     
-    !METODOS QUE VAYAN SUMANDO A GANANCIAS Y COSTOS SEGU LA SUCURSAL Y UNO QUE HAGA LAS GANANCIAS
+    subroutine sum_ganancias(this, result)
+        class(sucursal), intent(in) :: this
+        integer, intent(out) :: result
+        type(node_s), pointer :: current
+        
+        result = 0
+        current => this%head
+        
+        do while (associated(current))
+            result = result + current%ganancias
+            current => current%next
+        end do
+    end subroutine sum_ganancias
+
+    subroutine sum_costos(this, result)
+        class(sucursal), intent(in) :: this
+        integer, intent(out) :: result
+        type(node_s), pointer :: current
+        
+        result = 0
+        current => this%head
+        
+        do while (associated(current))
+            result = result + current%costos
+            current => current%next
+        end do
+    end subroutine sum_costos
 
 
 end module suc
 
-program main
-    use suc
-    implicit none
-
-    type(cola) :: my_cola
-
-    call my_cola%append(5,1,100,200)
-    call my_cola%append(3,2,300,400)
-    call my_cola%append(7,3,500,600)
-    call my_cola%append(1,4,500,400)
-    call my_cola%append(9,5,500,500)
-
-    call my_cola%add_value(3)
-    call my_cola%add_costos(3,100)
-    call my_cola%add_ganancias(5,500)
-    call my_cola%bubble_sort()
-
-    call my_cola%print()
-end program main
