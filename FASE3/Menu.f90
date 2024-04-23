@@ -128,6 +128,88 @@ end subroutine json_sucursal
 
 
 
+subroutine json_rutas(filename, adjacency_list)
+    use json_module
+    use ruta_grafo
+
+    implicit none
+
+    character(len=*), intent(in) :: filename
+
+    type(json_file) :: json   
+    type(json_value), pointer :: listPointer, layerPointer, pixelsPointer, pixelPointer, attributePointer  
+    type(json_core) :: jsonc
+    
+    type(adyacencia), intent(inout) :: adjacency_list
+
+    integer :: i, j, size, s1, s2, distancia, imp_mantenimiento      
+    logical :: found
+    logical :: id_found
+
+    call json%initialize()    
+    call json%load(filename=filename)  
+
+    ! Print JSON information for debugging
+    call json%info('', n_children=size)
+    !print *, "Total :", size
+
+    call json%get_core(jsonc)              
+    call json%get('', listPointer, found)
+
+    ! Check if 'grafo' field is found
+    call jsonc%get_child(listPointer, "grafo", pixelsPointer, found=found) 
+    !print *, "'grafo' -", found
+
+    do i = 1, size                          
+                        
+        call jsonc%get_child(listPointer, i, layerPointer, found=found)  
+        !print *, "Layer", i, "-", found
+
+        if (found) then                      
+            j = 0 
+            do while (.true.) 
+                j = j + 1
+                call jsonc%get_child(pixelsPointer, j, pixelPointer, found=found) 
+                !print *, "Pixel", j, "-", found
+
+                if (.not. found) exit 
+                
+                call jsonc%get_child(pixelPointer, 's1', attributePointer, found=found) 
+                if (found) then
+                    call jsonc%get(attributePointer, s1)    
+                end if
+                !print *, "s1:", found
+
+                call jsonc%get_child(pixelPointer, 's2', attributePointer, found=found) 
+                if (found) then
+                    call jsonc%get(attributePointer, s2)       
+                end if
+                !print *, "s2 :", found
+
+                call jsonc%get_child(pixelPointer, 'distancia', attributePointer, found=found) 
+                if (found) then
+                    call jsonc%get(attributePointer, distancia)    
+                end if
+                !print *, "distancia :", found
+
+                call jsonc%get_child(pixelPointer, 'imp_mantenimiento', attributePointer, found=found) 
+                if (found) then
+                    call jsonc%get(attributePointer, imp_mantenimiento)    
+                end if
+                !print *, "imp_mantenimiento :", found
+
+                call adjacency_list%insert(s1, s2, distancia, imp_mantenimiento)
+                
+            end do
+        end if
+    end do
+
+    call json%destroy()                    
+end subroutine json_rutas
+
+
+
+
 program Menu
 
 !--------------declaraciones ----------------
@@ -135,25 +217,30 @@ program Menu
     use hash_table_m
     use L_tecnico
     use suc
+    use ruta_grafo
+
     implicit none
 
     type(tec) :: tecnicos
     type(HashTable) :: table
     type(sucursal) ::  suc
     type(bst)  :: bstA
-    
+    type(adyacencia):: adjacency_list
 !---------------------------------------------
 
     character(len=100) :: username, password, id_password
     integer :: choice_menu, choice_sub_menu, dpi_tecnico
-
+    !-------------rutas
+integer :: llega_s, sale_s, tecnico_s, distancia_s, mantenimiento_s,total_rutas
+    !---------
+    integer, dimension(:), allocatable :: path_array, path_man
     !entrar a sucursal----------
     integer :: id_sucursal,unit
     integer :: total_ganancias, total_costos, totalTotal
     character(len=100) :: pass_sucursal
     logical :: found_suc
 !------------------------------
-    character(len=100) :: filenameSucursal, filenameTecnico,sucursarlBst,TablaHash
+    character(len=100) :: filenameSucursal, filenameTecnico,sucursarlBst,TablaHash, filenameRutas
 unit=0
     sucursarlBst = "sucursales_bst.dot"
     TablaHash = "tabla_hash.dot"
@@ -239,6 +326,11 @@ contains
 
                 case (2)
                     print *, "Cargar rutas"
+                    print *, "ingrese nombre del archivo:"
+                    read(*,*) filenameRutas
+                    call json_rutas(filenameRutas, adjacency_list)
+                    print *, "sucursales y conexiones:"
+                    call adjacency_list%printList()
                     
                 case (3)
                     print *, "REGRESANDO AL MENU PRINCIPAL..."
@@ -275,16 +367,35 @@ contains
                     call json_tecnico( filenameTecnico, tecnicos,table, id_sucursal)
                 case (2)
                     print *, "2. Generar ruta optima - GRAFOS"
-!FALTA TODO LO DE GENERAR RUTA MAS OPTIMA --- SUMAR 
-                    !prueba
-                    call suc%add_value(3)
-                    call suc%add_value(4)
-                    call suc%add_costos(1,150)
-                    call suc%add_costos(3,500)
-                    call suc%add_ganancias(5,500)
-                    call suc%add_value(1)
-                    call suc%add_costos(3,100)
-                    call suc%add_ganancias(6,700)
+                    print *, "ingrese dpi del tecnico:"
+                    read(*,*) tecnico_s
+                    print *, "ingrese id sucursal LLEGADA:"
+                    read(*,*) llega_s
+                    print *, "ingrese id sucursal SALIDA:"
+                    read(*,*) sale_s
+                    call tecnicos%increment_value(tecnico_s, id_sucursal)
+                    call suc%add_value(id_sucursal)
+                    print *,"trabajo asignado"
+
+                    
+
+
+                    call adjacency_list%shortestDistance(sale_s, llega_s, path_array, distancia_s, mantenimiento_s)
+                    print *, "-----------INFORMACION DEL RECORRIDO OPTIMO---------------"
+                    print *, "(gastos)distancia: Q", distancia_s*80
+                    print *, "(ganancia) mantenimiento: Q", mantenimiento_s*100
+                    print *, "total ganancias: Q", mantenimiento_s*100-distancia_s*80
+                    total_rutas=mantenimiento_s*100-distancia_s*80
+                    !print *, "Se ha generado la imagen del grafo."
+                    print *, "*************> generando grafico de ruta"
+                    print *, "--<distancia_min.png>----> grafo del recorrido."
+                    call adjacency_list%graphWithColor(path_array)
+
+                    print *, "------------------------------------------------------------"
+
+                    call suc%add_costos(id_sucursal,distancia_s*80)
+                    call suc%add_ganancias(id_sucursal,mantenimiento_s*100)
+
 
                     !prueba
                 case (3)
@@ -297,6 +408,7 @@ contains
                     call tecnicos%print(id_sucursal)
                 case (5)
                     print *, "5. TOP 5 TECNICOS - info de costos y ganancias del recorrdio"
+                    call tecnicos%bubble_sort()
                     call tecnicos%print_5(id_sucursal)
                     !FALTA INFO DE COSTOS Y GANANCIAS
                 case (6)
@@ -336,10 +448,18 @@ contains
             select case(choice)
                 case (1)
                     print *, "1. ARBOL MERCKLE"
+                    !arbooooooooooooooool merckle
                 case (2)
                     print *, "2. BLOCKCHAIN"
+                    !blockchain
                 case (3)
                     print *, "3. SUCURSALES Y SUS RUTAS - grafo y arbol B"
+                    print *, "--<graph.svg>----> mapa de sucursales"
+                    !-------------sucursales---------------
+                    call adjacency_list%graph()
+                    !------------rutas  grafo
+                    print *, "--<distancia_min.svg>----> grafo del recorrido."
+                    call adjacency_list%graphWithColor(path_array)
 
                     !-------------arbol B de las sucursales
                     open(unit, file=sucursarlBst, status='replace')	
@@ -360,10 +480,11 @@ contains
                     call execute_command_line('dot -Tsvg tabla_hash.dot > tabla_hash.svg')
                     call execute_command_line('start tabla_hash.svg')
                 case (5)
-                    print *, "5. TOP 5 TECNICOS - info de costos y ganancias del recorrdio"
+                    print *, "5. TOP 5 TECNICOS "
+                    call tecnicos%bubble_sort()
+                    call tecnicos%print_5(id_sucursal)
                 case (6)
                     print *, "6. TOP 5 SUCURSALES - GANANCIAS, COSTOS Y GANANCIAS TOTALES"
-
 
                     call suc%bubble_sort()
                     call suc%print()
@@ -371,12 +492,12 @@ contains
                     call suc%sum_costos(total_costos)
                     
                     ! Print the results
-                    print *,"****************************"
-                    print *, 'Total Ganancias:', total_ganancias
-                    print *, 'Total Costos:', total_costos
+                    print *,"*************Reportes****dinero***********"
+                    print *, 'Total Ganancias: Q', total_ganancias
+                    print *, 'Total Costos: Q', total_costos
                     totalTotal=total_ganancias-total_costos
-                    print *, 'Ganancias TOTALES:', totalTotal
-                    print *,"****************************"
+                    print *, 'Ganancias TOTALES: Q', totalTotal
+                    print *,"******************************************"
                 case (0)
                     exit
                 case default

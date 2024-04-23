@@ -1,0 +1,32 @@
+ digraph G {
+ label="Distancia minima"
+           4 [label = "           4 ", style=filled, color = lightblue]
+           5 [label = "           5 ", style=filled, color = lightblue]
+           4 [label = "           4 ", style=filled, color = lightblue]
+           6 [label = "           6 ", style=filled, color = lightblue]
+           1  ->            4  [label = "           7 ", dir = normal];
+           1  ->            5  [label = "           3 ", dir = normal];
+           1  ->            4  [label = "           7 ", dir = normal];
+           1  ->            6  [label = "          11 ", dir = normal];
+           2 [label = "           2 ", style=filled, color = lightblue]
+           2  ->            5  [label = "           2 ", dir = normal];
+           3 [label = "           3 ", style=filled, color = lightblue]
+           3  ->            1  [label = "          12 ", dir = normal];
+           3  ->            4  [label = "           3 ", dir = normal];
+           4 [label = "           4 ", style=filled, color = lightblue]
+           4  ->            2  [label = "           5 ", dir = normal];
+           4  ->            6  [label = "          12 ", dir = normal];
+           4  ->            1  [label = "           7 ", dir = normal];
+           5 [label = "           5 ", style=filled, color = lightblue]
+           5  ->            3  [label = "          14 ", dir = normal];
+           5  ->            1  [label = "          10 ", dir = normal];
+           5  ->            7  [label = "          13 ", dir = normal];
+           5  ->            6  [label = "           4 ", dir = normal];
+           6 [label = "           6 ", style=filled, color = lightblue]
+           6  ->            4  [label = "           2 ", dir = normal];
+           6  ->            3  [label = "          18 ", dir = normal];
+           7 [label = "           7 "]
+           6 [label = "           6 ", style=filled, color = lightblue]
+           7  ->            1  [label = "           4 ", dir = normal];
+           7  ->            6  [label = "           8 ", dir = normal];
+ }
