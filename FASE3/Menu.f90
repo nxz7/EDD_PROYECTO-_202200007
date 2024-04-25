@@ -68,13 +68,16 @@ subroutine json_tecnico(filename, tecnicos, table, sucursal)
 end subroutine json_tecnico
 
 
-subroutine json_sucursal(filename, suc, bstA)
+subroutine json_sucursal(filename, suc, bstA, mk_sucur)
     use json_module
     use suc
     use bst_tree
+    use mk_inf
+
         implicit none
     
         type(sucursal), intent(inout) ::  suc
+        type(mk_suc), intent(inout) :: mk_sucur
         type(bst), intent(inout)  :: bstA
         character(len=*), intent(in) :: filename
         
@@ -118,7 +121,7 @@ subroutine json_sucursal(filename, suc, bstA)
             end if
     
             call suc%append(0,idL,0,0)
-            
+            call mk_sucur%append(idL,departamentoL, direccionL, passwordL)
             call bstA%add(idL,departamentoL, direccionL, passwordL)
         end do
     
@@ -218,6 +221,9 @@ program Menu
     use L_tecnico
     use suc
     use ruta_grafo
+    use mk_inf
+    use sha256_module
+use merkle_tree
 
     implicit none
 
@@ -226,12 +232,18 @@ program Menu
     type(sucursal) ::  suc
     type(bst)  :: bstA
     type(adyacencia):: adjacency_list
+    type(mk_suc):: mk_sucur
+    type(merkle) :: merkle_arb
+
 !---------------------------------------------
 
     character(len=100) :: username, password, id_password
     integer :: choice_menu, choice_sub_menu, dpi_tecnico
+    !-----------------mk
+    character(len=100), allocatable :: merged_result(:)
+
     !-------------rutas
-integer :: llega_s, sale_s, tecnico_s, distancia_s, mantenimiento_s,total_rutas
+integer :: llega_s, sale_s, tecnico_s, distancia_s, mantenimiento_s,total_rutas, contador
     !---------
     integer, dimension(:), allocatable :: path_array, path_man
     !entrar a sucursal----------
@@ -239,7 +251,12 @@ integer :: llega_s, sale_s, tecnico_s, distancia_s, mantenimiento_s,total_rutas
     integer :: total_ganancias, total_costos, totalTotal
     character(len=100) :: pass_sucursal
     logical :: found_suc
+    integer :: id_p
+    integer :: unit_7
 !------------------------------
+    character(:), allocatable ::  sha, dato_merkle, usersha, passwordsha,ppsha_user, ppsha_pass
+    character(len=:), allocatable :: val
+!--------------------------------    
     character(len=100) :: filenameSucursal, filenameTecnico,sucursarlBst,TablaHash, filenameRutas
 unit=0
     sucursarlBst = "sucursales_bst.dot"
@@ -247,11 +264,17 @@ unit=0
 
     print *, "nombre - credencial principal:"
     read(*,*) username
-    print *, "contraseña - credencial principañ:"
+    usersha=sha256(username)
+    print *, "contraseña - credencial principal:"
     read(*,*) password
-
-    ! Check username and password
-    if (trim(username) == "EDD1S2024" .and. trim(password) == "ProyectoFase3") then
+    passwordsha=sha256(password)
+    !print *, "SHA256 de credenciales:"
+    !print *, "usuario:", usersha
+    !print *, "password:", passwordsha
+    ppsha_user="8BC9A3846746B37F15990191FA8186567353BE0A05427B87C15F32D92F5FA48D"
+    ppsha_pass="6187B89B36C6570624E24D9CAB8C9FA43B176FE02C781C8587556F0D3F4AA430"
+    ! EDD1S2024 >>>>>>>>> ProyectoFase3
+    if (trim(usersha) == ppsha_user .and. trim(passwordsha) == ppsha_pass) then
         print *, "ESTAS LOGGEADO!"
         ! Display main menu
         do
@@ -314,7 +337,11 @@ contains
                     print *, "Cargar sucursales"
                     print *, "ingrese nombre del archivo:"
                     read(*,*) filenameSucursal
-                    call json_sucursal(filenameSucursal, suc, bstA)
+                    call json_sucursal(filenameSucursal, suc, bstA,mk_sucur)
+                    print *, ">>>>>>>>>>>>>>>>>>>>>"
+                    print *, "sucursales:"
+                    call mk_sucur%print()
+                    print *, ">>>>>>>>>>>>>>>>>>>>>"
 
                     open(unit, file=sucursarlBst, status='replace')	
                     print *, 'generando grafico de sucursales BST...'
@@ -380,7 +407,7 @@ contains
                     
 
 
-                    call adjacency_list%shortestDistance(sale_s, llega_s, path_array, distancia_s, mantenimiento_s)
+                    call adjacency_list%shortestDistance(sale_s, llega_s, path_array, distancia_s, mantenimiento_s,contador)
                     print *, "-----------INFORMACION DEL RECORRIDO OPTIMO---------------"
                     print *, "(gastos)distancia: Q", distancia_s*80
                     print *, "(ganancia) mantenimiento: Q", mantenimiento_s*100
@@ -390,6 +417,13 @@ contains
                     print *, "*************> generando grafico de ruta"
                     print *, "--<distancia_min.png>----> grafo del recorrido."
                     call adjacency_list%graphWithColor(path_array)
+                    print *, path_array
+                    print *, size(path_array)
+                    print *, "*************> las cadenas:"
+                    call mk_sucur%merge_nodes(path_array, merged_result)
+                    print *, merged_result
+
+                    deallocate(path_array)
 
                     print *, "------------------------------------------------------------"
 
@@ -449,6 +483,29 @@ contains
                 case (1)
                     print *, "1. ARBOL MERCKLE"
                     !arbooooooooooooooool merckle
+                    print *, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ", contador
+                    print *, 'MERKLE:'
+                    
+                    do id = 1, contador-1
+                        if (len_trim(merged_result(id)) > 0 .and. merged_result(id) /= '0') then
+                            print *, merged_result(id)
+                            val = merged_result(id)
+                            call merkle_arb%add(val)
+                        endif
+                    end do
+                    print *, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> "
+
+                    open(unit_7, file="merkle_graph.dot", status='replace')	
+                    call merkle_arb%generate()
+                    print *, 'GENERANDO ARBOL MERKLE'
+                        call merkle_arb%dotgen_merkle(unit_7)
+                        close(unit_7)
+                    call execute_command_line('dot -Tsvg merkle_graph.dot > merkle_graph.svg')
+                    call execute_command_line('start merkle_graph.svg')
+                
+                    ! Deallocate input array
+                    deallocate(merged_result)
+
                 case (2)
                     print *, "2. BLOCKCHAIN"
                     !blockchain
@@ -458,8 +515,8 @@ contains
                     !-------------sucursales---------------
                     call adjacency_list%graph()
                     !------------rutas  grafo
-                    print *, "--<distancia_min.svg>----> grafo del recorrido."
-                    call adjacency_list%graphWithColor(path_array)
+                    !print *, "--<distancia_min.svg>----> grafo del recorrido."
+                    !call adjacency_list%graphWithColor(path_array)
 
                     !-------------arbol B de las sucursales
                     open(unit, file=sucursarlBst, status='replace')	

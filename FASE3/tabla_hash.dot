@@ -1,4 +1,4 @@
-digraph HashTable {
+digraph {
   node [shape=plaintext];
   hash_table [label=<
     <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0">
@@ -21,18 +21,18 @@ digraph HashTable {
       </TR>
       <TR>
         <TD>tecnicos</TD>
+        <TD>-1</TD>
+        <TD>-1</TD>
+        <TD>-1</TD>
         <TD>301684771</TD>
-        <TD>301477811</TD>
-        <TD>454212140</TD>
-        <TD>201301456</TD>
         <TD>200778456</TD>
+        <TD>454212140</TD>
+        <TD>301477811</TD>
+        <TD>201301456</TD>
+        <TD>-1</TD>
+        <TD>-1</TD>
+        <TD>-1</TD>
         <TD>200325101</TD>
-        <TD>-1</TD>
-        <TD>-1</TD>
-        <TD>-1</TD>
-        <TD>-1</TD>
-        <TD>-1</TD>
-        <TD>-1</TD>
         <TD>-1</TD>
         <TD>-1</TD>
       </TR>

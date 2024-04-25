@@ -33,7 +33,13 @@
     {
         "id": 6,
         "departamento": "Guatemala",
-        "direccion": "ova calle A ZONA 6",
+        "direccion": "DIRECCION DE LA 6",
+        "password": "6789"
+    },
+    {
+        "id": 7,
+        "departamento": "Guatemala",
+        "direccion": "DIRECCION DE LA 7",
         "password": "6789"
     }
 ]

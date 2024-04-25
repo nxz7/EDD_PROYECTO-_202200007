@@ -184,11 +184,11 @@ write(io, *) current_node%salida, " -> ", current_subnode%llega, " [label = """,
         end if
     end subroutine graph
 
-    subroutine shortestDistance(self, source, destination, path_array, costo_distancia, costo_mantenimiento)
+    subroutine shortestDistance(self, source, destination, path_array, costo_distancia, costo_mantenimiento,contador)
         class(adyacencia), intent(in) :: self
         integer, intent(in) :: source, destination
         integer, dimension(:), allocatable, intent(inout) :: path_array !todos los nodos que visita
-        
+        integer, intent(inout):: contador
         integer, intent(inout) :: costo_distancia, costo_mantenimiento
 
         integer, dimension(:), allocatable :: dist, previous, visited
@@ -201,13 +201,14 @@ write(io, *) current_node%salida, " -> ", current_subnode%llega, " [label = """,
         current_node = source
         total_maintenance = 0
         n = 0
+        contador=0
         current => self%head
         do while (associated(current))
             n = n + 1
             current => current%next
         end do
     
-        ! Count all destination nodes
+        ! des
         current => self%head
         do while (associated(current))
             neighbor => current%list
@@ -276,11 +277,13 @@ write(io, *) current_node%salida, " -> ", current_subnode%llega, " [label = """,
             end if
             print *,  current_node
             path_array(i) = current_node
+            contador=contador+1
             i = i + 1
             current_node = previous(current_node)
         end do
         path_array(i) = source
         print *, source
+        contador=contador+1
     
         ! Print the path
         print *, "CAMINO CON MENOR DISTANCIA(COSTO) DE: ", source, " -> ", destination, "// DISTANCIA ", dist(destination)

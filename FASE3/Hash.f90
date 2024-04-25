@@ -14,7 +14,7 @@ module hash_table_m
         procedure :: insert
         procedure :: print
         procedure :: search
-        procedure, private :: linealProbe
+        procedure, private :: DobProbe
         procedure :: grafico
     end type HashTable
 contains
@@ -33,7 +33,7 @@ contains
         pos = hash_index(key)
 
         if(self%table(pos) /= -1 .and. self%table(pos) /= key) then
-            call self%linealProbe(pos)
+            call self%DobProbe(pos)
         end if
 
         self%table(pos) = int(key, kind=4)
@@ -62,7 +62,7 @@ contains
         end do
     end function rehashing
 
-    subroutine linealProbe(self, pos)
+    subroutine DobProbe(self, pos)
         class(HashTable), intent(inout) :: self
         integer, intent(inout) :: pos
 
@@ -70,7 +70,7 @@ contains
             pos = pos + 1
             pos = mod(pos, M)
         end do
-    end subroutine linealProbe
+    end subroutine DobProbe
 
     function hash_index(key) result(i)
         integer(long), intent(in) :: key
@@ -85,7 +85,8 @@ contains
         integer :: v
 
         t = real(R*real(x,kind=4), kind=4) - real(floor(R*real(x,kind=4)), kind=4)
-        v = floor(M*t)
+        !ARREGLADO A LAS ESPECIFICACIONES
+        v = mod(x,M)
     end function dispersion
 
     subroutine print(self)
@@ -117,8 +118,8 @@ contains
     
         unit = 10  
         open(unit, file=filename, status='replace')
-        print *, "GRAFICANDO HASH"
-        write(unit, '(A)') 'digraph HashTable {'
+        
+        write(unit, '(A)') 'digraph {'
         write(unit, '(A)') '  node [shape=plaintext];'
         write(unit, '(A)') '  hash_table [label=<'
         write(unit, '(A)') '    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0">'
@@ -133,15 +134,15 @@ contains
     
         
         write(unit, '(A)') '      <TR>'
-        write(unit, '(A)') '        <TD>tecnicos</TD>' ! Label for the row
-        !print *, "GRAFICANDO"
+        write(unit, '(A)') '        <TD>tecnicos</TD>' 
+        
         do i = 0, size(self%table) - 1
             if (self%table(i) /= -1) then
                 write(unit, '(A,I0,A)') '        <TD>', self%table(i), '</TD>'
-                !print *, "DO IF"
+                
             else
                 write(unit, '(A)') '        <TD>-1</TD>'
-                !print *, "DO ELSE"
+                
             end if
         end do
         write(unit, '(A)') '      </TR>'
