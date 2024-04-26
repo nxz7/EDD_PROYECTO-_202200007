@@ -52,7 +52,7 @@ contains
             this%tail => temp
         end if
 
-        print *, '--- ', value
+        !print *, '--- ', value
     end subroutine append
 
     subroutine print(this, target_sucursal)

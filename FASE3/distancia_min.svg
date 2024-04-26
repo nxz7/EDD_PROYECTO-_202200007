@@ -91,7 +91,7 @@
 <!-- 7 -->
 <g id="node7" class="node">
 <title>7</title>
-<ellipse fill="none" stroke="black" cx="293" cy="-217.25" rx="45.08" ry="18"/>
+<ellipse fill="lightblue" stroke="lightblue" cx="293" cy="-217.25" rx="45.08" ry="18"/>
 <text text-anchor="middle" x="293" y="-211.82" font-family="Times New Roman,serif" font-size="14.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;7 </text>
 </g>
 <!-- 5&#45;&gt;7 -->

@@ -73,6 +73,7 @@ subroutine json_sucursal(filename, suc, bstA, mk_sucur)
     use suc
     use bst_tree
     use mk_inf
+    use sha256_module
 
         implicit none
     
@@ -117,7 +118,8 @@ subroutine json_sucursal(filename, suc, bstA, mk_sucur)
     
             call jsonc%get_child(personPointer, 'password', attributePointer, found = found)                   
             if (found) then                      
-                call jsonc%get(attributePointer, passwordL)          
+                call jsonc%get(attributePointer, passwordL) 
+                passwordL=sha256(passwordL)         
             end if
     
             call suc%append(0,idL,0,0)
@@ -295,6 +297,7 @@ unit=0
                     read(*,*) id_sucursal
                     print *, "contraseña - SUCURSAL:"
                     read(*,*) id_password
+                    id_password=sha256(id_password)
                     call bstA%search_node(id_sucursal,id_password, found_suc)
                     print *, found_suc
                         if (found_suc) then
