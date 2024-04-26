@@ -11,7 +11,7 @@
            2 [label = "           2 ", style=filled, color = lightblue]
            2  ->            5  [label = "           2 ", dir = normal];
            3 [label = "           3 ", style=filled, color = lightblue]
-           3  ->            1  [label = "          12 ", dir = normal];
+           3  ->            9  [label = "          12 ", dir = normal];
            3  ->            4  [label = "           3 ", dir = normal];
            4 [label = "           4 ", style=filled, color = lightblue]
            4  ->            2  [label = "           5 ", dir = normal];
@@ -24,9 +24,16 @@
            5  ->            6  [label = "           4 ", dir = normal];
            4 [label = "           4 ", style=filled, color = lightblue]
            3 [label = "           3 ", style=filled, color = lightblue]
+           6 [label = "           6 "]
            6  ->            4  [label = "           2 ", dir = normal];
            6  ->            3  [label = "          18 ", dir = normal];
+           6  ->            9  [label = "          14 ", dir = normal];
            7 [label = "           7 ", style=filled, color = lightblue]
            7  ->            1  [label = "           4 ", dir = normal];
            7  ->            6  [label = "           8 ", dir = normal];
+           7  ->            8  [label = "           3 ", dir = normal];
+           8 [label = "           8 ", style=filled, color = lightblue]
+           8  ->            1  [label = "           8 ", dir = normal];
+           5 [label = "           5 ", style=filled, color = lightblue]
+           9  ->            5  [label = "          24 ", dir = normal];
  }

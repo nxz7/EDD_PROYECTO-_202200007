@@ -345,6 +345,7 @@ contains
                     print *, "sucursales:"
                     call mk_sucur%print()
                     print *, ">>>>>>>>>>>>>>>>>>>>>"
+                    call mk_sucur%write_to_json()
 
                     open(unit, file=sucursarlBst, status='replace')	
                     print *, 'generando grafico de sucursales BST...'
@@ -361,7 +362,8 @@ contains
                     call json_rutas(filenameRutas, adjacency_list)
                     print *, "sucursales y conexiones:"
                     call adjacency_list%printList()
-                    
+                    call adjacency_list%write_routes_to_json()
+                    print *, "*******************************"
                 case (3)
                     print *, "REGRESANDO AL MENU PRINCIPAL..."
                     exit

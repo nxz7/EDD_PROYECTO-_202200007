@@ -41,5 +41,17 @@
         "departamento": "Guatemala",
         "direccion": "DIRECCION DE LA 7",
         "password": "6789"
+    },
+    {
+        "id": 8,
+        "departamento": "Guatemala",
+        "direccion": "DIRECCION DE LA 6",
+        "password": "6789"
+    },
+    {
+        "id": 9,
+        "departamento": "Guatemala",
+        "direccion": "DIRECCION DE LA 7",
+        "password": "6789"
     }
 ]

@@ -18,6 +18,7 @@ module mk_inf
         procedure :: print
         procedure :: search
         procedure :: merge_nodes
+        procedure :: write_to_json
     end type mk_suc
 
 contains
@@ -182,6 +183,39 @@ contains
         deallocate(valid_ids)
     end subroutine merge_nodes
     
-    
+    subroutine write_to_json(this)
+        class(mk_suc), intent(in) :: this
+        type(node_mk), pointer :: current
+        integer :: unit
+        character(len=255) :: filename
+
+        ! Specify the full path to the JSON file
+        filename = 'C:\Users\natalia\Documents\5SEM\edd\lab\EDD_PROYECTO-_202200007\FASE3\Data_persistencia\pers_sucursales.json'
+
+        unit = 10
+        open(unit, file=filename, status='replace')
+
+        current => this%head
+
+        write(unit, '(''['', /)')
+
+        do while (associated(current))
+            write(unit, '(A)') '  {'
+            write(unit, '(A,I0,A,A)') '    "id":',  current%id, ','
+            write(unit, '(A,A,A,A,A)') '    "departamento": "', trim(current%departamento),'",'
+            write(unit, '(A,A,A,A,A)') '    "direccion": "', trim(current%direccion),'",'
+            write(unit, '(A,A,A,A)') '    "password": "',trim(current%password),'"'
+            current => current%next
+            if (associated(current)) then
+                write(unit, '(A)') '  },'
+            else
+                write(unit, '(A)') '  }'
+            endif
+        end do 
+
+        write(unit, '('']'', /)')
+
+        close(unit)
+    end subroutine write_to_json
 
 end module mk_inf

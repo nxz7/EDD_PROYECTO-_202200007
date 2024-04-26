@@ -26,6 +26,7 @@ module ruta_grafo
         procedure :: graph
         procedure :: shortestDistance
         procedure :: graphWithColor
+        procedure :: write_routes_to_json
 
     end type adyacencia
 
@@ -353,6 +354,52 @@ write(io, *) current_node%salida, " -> ", current_subnode%llega, " [label = """,
         end if
     end subroutine graphWithColor
     
+
+    subroutine write_routes_to_json(this)
+        class(adyacencia), intent(in) :: this
+        type(node_sucursal), pointer :: current_node
+        type(sub_node), pointer :: current_subnode
+        integer :: unit
+        character(len=255) :: filename
+    
+        ! Specify the full path to the JSON file
+        filename = 'C:\Users\natalia\Documents\5SEM\edd\lab\EDD_PROYECTO-_202200007\FASE3\Data_persistencia\pers_rutas.json'
+    
+        unit = 10
+        open(unit, file=filename, status='replace')
+    
+        write(unit, *) "{"
+        write(unit, *) "    ""grafo"": ["
+    
+        current_node => this%head
+        do while(associated(current_node))
+            current_subnode => current_node%list
+            do while(associated(current_subnode))
+                write(unit, "('        {')")
+                write(unit, "('            ""s1"":', I0, ',')") current_node%salida
+                write(unit, "('            ""s2"":', I0, ',')") current_subnode%llega
+                write(unit, "('            ""distancia"":', I0, ',')") current_subnode%distancia
+                write(unit, "('            ""imp_mantenimiento"":', I0)") current_subnode%mantenimiento
+                current_subnode => current_subnode%next
+                if (associated(current_subnode) .or. associated(current_node%next)) then
+                    write(unit, "('        },'),")
+                else
+                    write(unit, "('        }')")
+                endif
+            end do
+            current_node => current_node%next
+            if (associated(current_node)) then
+                write(unit, "('  '),")
+            else
+                write(unit, "('    ')")
+            endif
+        end do
+    
+        write(unit, *) "    ]"
+        write(unit, *) "}"
+    
+        close(unit)
+    end subroutine write_routes_to_json
 
 end module ruta_grafo
 
