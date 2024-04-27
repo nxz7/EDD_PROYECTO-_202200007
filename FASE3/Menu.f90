@@ -397,6 +397,7 @@ contains
                     print *, "ingrese nombre del archivo:"
                     read(*,*) filenameTecnico
                     call json_tecnico( filenameTecnico, tecnicos,table, id_sucursal)
+                    call tecnicos%tec_to_json()
                 case (2)
                     print *, "2. Generar ruta optima - GRAFOS"
                     print *, "ingrese dpi del tecnico:"

@@ -22,6 +22,7 @@ module L_tecnico
         procedure :: print_5
         procedure :: find_and_print
         procedure :: increment_value
+        procedure :: tec_to_json
     end type tec
 
 contains
@@ -224,5 +225,41 @@ contains
             print *, 'No se encontró ningún técnico con DPI:', target_dpi, 'en la sucursal:', target_sucursal
         end subroutine increment_value
 
+        subroutine tec_to_json(this)
+            class(tec), intent(in) :: this
+            type(node), pointer :: current
+            integer :: unit
+            character(len=255) :: filename
+            
+            
+            filename = 'C:\Users\natalia\Documents\5SEM\edd\lab\EDD_PROYECTO-_202200007\FASE3\Data_persistencia\pers_tecnicos.json'
+
+            unit = 10 
+        
+            open(unit, file=filename, status='replace')
+        
+            write(unit, '(''['', /)')
+        
+            current => this%head
+            do while (associated(current))
+                write(unit, '(A)') '  {'
+                write(unit, '(A,I0,A)') '    "dpi": ', current%dpi, ','
+                write(unit, '(A,A,A)') '    "nombre": "', trim(current%name), '",'
+                write(unit, '(A,A,A)') '    "apellido": "', trim(current%apellido), '",'
+                write(unit, '(A,A,A)') '    "genero": "', trim(current%genero), '",'
+                write(unit, '(A,A,A)') '    "direccion": "', trim(current%direccion), '",'
+                write(unit, '(A,I0)') '    "telefono": ', current%telefono
+                current => current%next
+                if (associated(current)) then
+                    write(unit, '(A)') '  },'
+                else
+                    write(unit, '(A)') '  }'
+                endif
+            end do
+        
+            write(unit, '('']'', /)')
+        
+            close(unit)
+        end subroutine tec_to_json
 
 end module L_tecnico
