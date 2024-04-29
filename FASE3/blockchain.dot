@@ -1,0 +1,37 @@
+digraph blockchain {
+    rankdir=LR;
+ node [shape=plaintext, color= lightgreen; ];
+node2[label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+        <TR><TD>ID</TD></TR>
+        <TR><TD>2</TD></TR>
+        <TR><TD>Data</TD></TR>
+        <TR><TD>3ova calle A ZONA 25ova calle A ZONA 5                                                              </TD></TR>        <TR><TD>5ova calle A ZONA 52ova calle A ZONA 3                                                              </TD></TR>
+        <TR><TD>RootMerkle</TD></TR>
+        <TR><TD>CEB3D0D290FDA4C60005DAEFBE49E44913DD1B102296AEA72902C66711C13032</TD></TR>
+        <TR><TD>HASH</TD></TR>
+        <TR><TD>B1A940183F286A9361671C209565339962F7A46DFD0416F5FD671A4DF5302E8A</TD></TR>
+        <TR><TD>PREV HASH</TD></TR>
+        <TR><TD>3DE91BCDCAF0B782E0FF06538BA68AB420DDDEC66C3FC395F1379E3B9EDF361F</TD></TR>
+        <TR><TD>Nonce</TD></TR>
+        <TR><TD>4001</TD></TR>
+        <TR><TD>Timestamps</TD></TR>
+        <TR><TD>28-04-2024 -- 18:13</TD></TR>
+    </TABLE>>];
+    node1 -> node2;
+node1[label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+        <TR><TD>ID</TD></TR>
+        <TR><TD>1</TD></TR>
+        <TR><TD>Data</TD></TR>
+        <TR><TD>8DIRECCION DE LA 67DIRECCION DE LA 7                                                                </TD></TR>        <TR><TD>7DIRECCION DE LA 75ova calle A ZONA 5                                                               </TD></TR>        <TR><TD>5ova calle A ZONA 51ova calle A ZONA 1                                                              </TD></TR>
+        <TR><TD>RootMerkle</TD></TR>
+        <TR><TD>9A45DB9CF0283CD79780B5ADBB7F5043922BA0E4B8C2A0AA7105D97247531499</TD></TR>
+        <TR><TD>HASH</TD></TR>
+        <TR><TD>3DE91BCDCAF0B782E0FF06538BA68AB420DDDEC66C3FC395F1379E3B9EDF361F</TD></TR>
+        <TR><TD>PREV HASH</TD></TR>
+        <TR><TD>0000</TD></TR>
+        <TR><TD>Nonce</TD></TR>
+        <TR><TD>4000</TD></TR>
+        <TR><TD>Timestamps</TD></TR>
+        <TR><TD>28-04-2024 -- 18:13</TD></TR>
+    </TABLE>>];
+}

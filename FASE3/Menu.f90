@@ -131,8 +131,6 @@ subroutine json_sucursal(filename, suc, bstA, mk_sucur)
     
 end subroutine json_sucursal
 
-
-
 subroutine json_rutas(filename, adjacency_list)
     use json_module
     use ruta_grafo
@@ -212,7 +210,39 @@ subroutine json_rutas(filename, adjacency_list)
     call json%destroy()                    
 end subroutine json_rutas
 
+subroutine write_block(idBc, nonceBc, prev_hash, rootArbMerkle, hashBlockchain, block_timestamp)
+    implicit none
+    integer, intent(in) :: idBc, nonceBc
+    character(len=*), intent(in) :: prev_hash, rootArbMerkle, hashBlockchain, block_timestamp
+    character(len=255) :: filename
+    integer :: unit, i
+    character(len=100) :: istr
+    
+    ! Convert integer idBc to a string
+    write(istr, '(I0)') idBc
+    
+    ! Construct the filename
+filename='C:\Users\natalia\Documents\5SEM\edd\lab\EDD_PROYECTO-_202200007\FASE3\block_persistencia\'//trim(adjustl(istr))//'.json'
+    
 
+    open(unit=unit, file=filename, status='replace')
+
+    write(unit, '(A)') '{'
+
+    write(unit, '(A,I0,A)') '"INDEX":',idBc,','
+    write(unit, '(A,A,A)') '"TIMESTAMP":"', block_timestamp, '",'
+    write(unit, '(A,I0,A)') '"NONCE": ', nonceBc, ','
+    write(unit, '(A)') '"DATA": ['
+    write(unit, '(A)') '],'
+    write(unit, '(A,A,A)') '"PREVIOUSHASH":"', prev_hash, '",'
+    write(unit, '(A,A,A)') '"ROOKMRKLE": "', rootArbMerkle, '",'
+    write(unit, '(A,A,A)') '"HASH": "', hashBlockchain, '"}'
+
+    ! Close the file
+    close(unit)
+  end subroutine write_block
+  
+  
 
 
 program Menu
@@ -226,6 +256,7 @@ program Menu
     use mk_inf
     use sha256_module
 use merkle_tree
+use blockchain
 
     implicit none
 
@@ -236,6 +267,7 @@ use merkle_tree
     type(adyacencia):: adjacency_list
     type(mk_suc):: mk_sucur
     type(merkle) :: merkle_arb
+    type(block_list) :: blockchain_list
 
 !---------------------------------------------
 
@@ -260,6 +292,17 @@ integer :: llega_s, sale_s, tecnico_s, distancia_s, mantenimiento_s,total_rutas,
     character(len=:), allocatable :: val
 !--------------------------------    
     character(len=100) :: filenameSucursal, filenameTecnico,sucursarlBst,TablaHash, filenameRutas
+!----------- blockchain
+integer::nonceBc, idBc
+character(len=100), allocatable :: DataInfo(:)
+character(:), allocatable :: rootArbMerkle,hashBlockchain,prev_hash, block_timestamp
+character(len=10) :: char_nums
+!------------------------
+nonceBc= 4000
+idBc=1
+block_timestamp= "28-04-2024 -- 18:13"
+prev_hash="0000"
+unit_7=8
 unit=0
     sucursarlBst = "sucursales_bst.dot"
     TablaHash = "tabla_hash.dot"
@@ -363,7 +406,7 @@ contains
                     print *, "sucursales y conexiones:"
                     call adjacency_list%printList()
                     call adjacency_list%write_routes_to_json()
-                    print *, "*******************************"
+                    
                 case (3)
                     print *, "REGRESANDO AL MENU PRINCIPAL..."
                     exit
@@ -491,29 +534,53 @@ contains
                     !arbooooooooooooooool merckle
                     print *, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ", contador
                     print *, 'MERKLE:'
-                    
+                    allocate(DataInfo(contador-1))
+
                     do id = 1, contador-1
                         if (len_trim(merged_result(id)) > 0 .and. merged_result(id) /= '0') then
                             print *, merged_result(id)
                             val = merged_result(id)
+                            DataInfo(id)=val
+                            print *, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> "
+                            print *, val 
                             call merkle_arb%add(val)
                         endif
                     end do
                     print *, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> "
 
                     open(unit_7, file="merkle_graph.dot", status='replace')	
+                    
                     call merkle_arb%generate()
+
                     print *, 'GENERANDO ARBOL MERKLE'
                         call merkle_arb%dotgen_merkle(unit_7)
                         close(unit_7)
                     call execute_command_line('dot -Tsvg merkle_graph.dot > merkle_graph.svg')
                     call execute_command_line('start merkle_graph.svg')
-                
+                    
+
                     ! Deallocate input array
                     deallocate(merged_result)
+                    print *,"---------limpiando merkle---------------"
+                    print *, "---------------------------------------"
 
                 case (2)
                     print *, "2. BLOCKCHAIN"
+                    call merkle_arb%get_tophash(rootArbMerkle)
+                    print *, rootArbMerkle
+                    print *, DataInfo
+                    write(char_nums, '(I0, I0)') idBc, nonceBc
+hashBlockchain =  char_nums//block_timestamp // prev_hash  // rootArbMerkle
+                    hashBlockchain=sha256(hashBlockchain)
+call blockchain_list%push(idBc, nonceBc, block_timestamp, prev_hash, hashBlockchain, DataInfo, rootArbMerkle)
+call write_block(idBc, nonceBc, prev_hash, rootArbMerkle, hashBlockchain, block_timestamp)
+idBc=idBc+1
+nonceBc= nonceBc+1
+prev_hash=hashBlockchain
+call blockchain_list%gg()
+
+                    deallocate(DataInfo)
+                    
                     !blockchain
                 case (3)
                     print *, "3. SUCURSALES Y SUS RUTAS - grafo y arbol B"

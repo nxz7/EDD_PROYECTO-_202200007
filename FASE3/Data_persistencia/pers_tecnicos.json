@@ -1,6 +1,54 @@
 [
 
   {
+    "dpi": 454212140,
+    "nombre": "Laura",
+    "apellido": "Cabrera",
+    "genero": "Femenino",
+    "direccion": "Mixco, guatemala 2",
+    "telefono": 12345678
+  },
+  {
+    "dpi": 301477811,
+    "nombre": "Natalia",
+    "apellido": " Calderon Echeverria",
+    "genero": "Femenino",
+    "direccion": "Mixco, guatemala",
+    "telefono": 12345678
+  },
+  {
+    "dpi": 301684771,
+    "nombre": "Juan Pablo",
+    "apellido": "Gonzalez carrilo",
+    "genero": "Masculino",
+    "direccion": "Zona 1, Huehuetenango",
+    "telefono": 12345678
+  },
+  {
+    "dpi": 201301456,
+    "nombre": "Santiago",
+    "apellido": "Calderon Echverria",
+    "genero": "Masculino",
+    "direccion": "Mixco, guatemala 3",
+    "telefono": 12345678
+  },
+  {
+    "dpi": 200778456,
+    "nombre": "VICTORIA",
+    "apellido": "Calderon Echverria",
+    "genero": "Femenino",
+    "direccion": "Mixco, guatemala 4",
+    "telefono": 20075124
+  },
+  {
+    "dpi": 200325101,
+    "nombre": "Marioa",
+    "apellido": "Enriquez",
+    "genero": "Masculino",
+    "direccion": "Mixco, guatemala 5",
+    "telefono": 20031475
+  },
+  {
     "dpi": 301684771,
     "nombre": "Juan Pablo",
     "apellido": "Gonzalez carrilo",

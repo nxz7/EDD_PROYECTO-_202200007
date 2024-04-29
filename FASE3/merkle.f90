@@ -36,6 +36,7 @@ module merkle_tree
 		procedure :: showhash
 		procedure :: dotgen_merkle
 		procedure :: dotgenrec_merkle
+		procedure :: get_tophash
 	end type merkle
 
 contains
@@ -62,7 +63,7 @@ subroutine generate(this)
 	integer :: expo = 1, i, pow
 	character(len=:), allocatable :: val
 
-    val="empty"
+    val="-1"
 
 	do while (2 ** expo < this%datablocklen())
 		expo = expo + 1
@@ -200,5 +201,19 @@ subroutine dotgenrec_merkle(this, tmp, unit_)
 		write (unit_, '(A,I5,A,I5,A)') ' ', tmp%uid, ' -- ', tmp%dataref%uid, ';'
     	end if
 end subroutine dotgenrec_merkle
+
+
+subroutine get_tophash(this, root_hash)
+    class(merkle), intent(inout) :: this
+    character(len=:), allocatable, intent(out) :: root_hash
+    
+    if (associated(this%tophash)) then
+        root_hash = this%tophash%hash
+    else
+        print *, "error aun no hay top hash."
+        root_hash = "error aun no hay top hash"
+    end if
+end subroutine get_tophash
+
 
 end module merkle_tree
